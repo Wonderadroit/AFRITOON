@@ -8,6 +8,7 @@ from typing import Mapping
 from PIL import Image
 
 from .cast_scene import CastScene
+from .performance_renderer import apply_performance, performance_for_character
 from .svg_renderer import rasterize_svg
 from .view_policy import resolve_view
 
@@ -27,7 +28,7 @@ def render_master_cast(
     positions: Mapping[str, tuple[float, float, float]] | None = None,
     character_width: int = 420,
 ) -> Image.Image:
-    """Compose the cast from canonical artwork without distorting characters."""
+    """Compose canonical artwork and apply the resolved character performance."""
     canvas = Image.new("RGBA", (W, H), (247, 243, 235, 255))
     state = scene.state_at(frame_time)
     overrides = positions or {}
@@ -46,6 +47,10 @@ def render_master_cast(
         width = max(1, int(character_width * scale))
         height = max(1, int(round(width * SOURCE_ASPECT)))
         artwork = rasterize_svg(resolved.path, width, height)
+
+        performance = performance_for_character(scene, character_id, frame_time)
+        artwork = apply_performance(artwork, performance, character_id)
+
         px = int(x - artwork.width / 2)
         py = int(baseline - artwork.height)
         canvas.alpha_composite(artwork, (px, py))
