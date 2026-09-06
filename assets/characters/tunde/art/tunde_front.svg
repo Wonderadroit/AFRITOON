@@ -1,17 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1100">
 <g stroke="#171717" stroke-width="12" stroke-linejoin="round" stroke-linecap="round">
-<!-- legs --> <path fill="#26384d" d="M245 760 L205 1010 L285 1010 L315 820 L345 1010 L425 1010 L385 760Z"/>
-<!-- shoes --> <path fill="#f4f4f4" d="M195 990 Q245 975 290 1000 L292 1040 L175 1040 Q170 1010 195 990Z"/><path fill="#f4f4f4" d="M340 1000 Q385 975 435 995 Q455 1010 450 1040 L335 1040Z"/>
-<!-- torso --> <path fill="#e8a23a" d="M220 500 Q300 470 380 500 L425 780 Q300 825 175 780Z"/>
-<!-- shirt mark --> <path fill="none" d="M255 590 Q300 625 345 590"/>
-<!-- arms --> <path fill="#8b5a3c" d="M220 535 Q165 560 150 680 Q145 715 175 720 Q205 715 215 680 L245 585Z"/><path fill="#8b5a3c" d="M380 535 Q435 560 450 680 Q455 715 425 720 Q395 715 385 680 L355 585Z"/>
-<!-- neck --> <path fill="#8b5a3c" d="M270 475 L270 530 Q300 550 330 530 L330 475Z"/>
-<!-- ears --> <ellipse fill="#8b5a3c" cx="175" cy="335" rx="38" ry="55"/><ellipse fill="#8b5a3c" cx="425" cy="335" rx="38" ry="55"/>
-<!-- head --> <ellipse fill="#8b5a3c" cx="300" cy="330" rx="155" ry="185"/>
-<!-- hair --> <path fill="#171717" d="M150 300 Q155 115 300 110 Q445 115 450 300 L415 250 Q380 205 300 205 Q220 205 185 250Z"/>
-<!-- eyes --> <ellipse fill="#fff" cx="245" cy="325" rx="34" ry="42"/><ellipse fill="#fff" cx="355" cy="325" rx="34" ry="42"/><circle fill="#171717" cx="252" cy="332" r="13"/><circle fill="#171717" cx="362" cy="332" r="13"/>
-<!-- brows --> <path fill="none" d="M210 270 Q245 245 275 265"/><path fill="none" d="M325 265 Q355 245 390 270"/>
-<!-- nose --> <path fill="none" d="M300 330 L285 390 Q300 402 318 390"/>
-<!-- mischievous smile --> <path fill="#fff" d="M250 415 Q300 435 360 405 Q345 470 295 465 Q260 460 250 415Z"/>
+<g data-layer="legs"><path fill="#26384d" d="M245 760 L205 1010 L285 1010 L315 820 L345 1010 L425 1010 L385 760Z"/></g>
+<g data-layer="shoes"><path fill="#f4f4f4" d="M195 990 Q245 975 290 1000 L292 1040 L175 1040 Q170 1010 195 990Z"/><path fill="#f4f4f4" d="M340 1000 Q385 975 435 995 Q455 1010 450 1040 L335 1040Z"/></g>
+<g data-layer="torso"><path fill="#e8a23a" d="M220 500 Q300 470 380 500 L425 780 Q300 825 175 780Z"/><path fill="none" d="M255 590 Q300 625 345 590"/></g>
+<g data-layer="left_arm"><path fill="#8b5a3c" d="M220 535 Q165 560 150 680 Q145 715 175 720 Q205 715 215 680 L245 585Z"/></g>
+<g data-layer="right_arm"><path fill="#8b5a3c" d="M380 535 Q435 560 450 680 Q455 715 425 720 Q395 715 385 680 L355 585Z"/></g>
+<g data-layer="neck"><path fill="#8b5a3c" d="M270 475 L270 530 Q300 550 330 530 L330 475Z"/></g>
+<g data-layer="ears"><ellipse fill="#8b5a3c" cx="175" cy="335" rx="38" ry="55"/><ellipse fill="#8b5a3c" cx="425" cy="335" rx="38" ry="55"/></g>
+<g data-layer="head"><ellipse fill="#8b5a3c" cx="300" cy="330" rx="155" ry="185"/></g>
+<g data-layer="front_hair"><path fill="#171717" d="M150 300 Q155 115 300 110 Q445 115 450 300 L415 250 Q380 205 300 205 Q220 205 185 250Z"/></g>
+<g data-layer="left_eye"><ellipse fill="#fff" cx="245" cy="325" rx="34" ry="42"/><circle fill="#171717" cx="252" cy="332" r="13"/></g>
+<g data-layer="right_eye"><ellipse fill="#fff" cx="355" cy="325" rx="34" ry="42"/><circle fill="#171717" cx="362" cy="332" r="13"/></g>
+<g data-layer="left_brow"><path fill="none" d="M210 270 Q245 245 275 265"/></g>
+<g data-layer="right_brow"><path fill="none" d="M325 265 Q355 245 390 270"/></g>
+<g data-layer="nose"><path fill="none" d="M300 330 L285 390 Q300 402 318 390"/></g>
+<g data-layer="mouth"><path fill="#fff" d="M250 415 Q300 435 360 405 Q345 470 295 465 Q260 460 250 415Z"/></g>
 </g>
 </svg>
