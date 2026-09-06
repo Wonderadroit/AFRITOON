@@ -13,7 +13,7 @@ class Action:
 def action_at(actions: list[Action], t: float) -> Action | None:
     """Return the latest action whose start time is <= t."""
     current = None
-    for action in sorted(actions, key=lambda item: item.time):
+    for action in actions:
         if action.time <= t:
             current = action
         else:
