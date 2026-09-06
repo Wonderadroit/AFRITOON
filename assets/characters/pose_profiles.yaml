@@ -1,0 +1,28 @@
+characters:
+  tunde:
+    idle: {posture: chest_out, energy: 0.8}
+    talk: {posture: chest_out, energy: 0.9}
+    walk: {posture: confident_stride, energy: 0.9}
+    shock: {posture: recoil, energy: 1.0}
+    shocked: {posture: recoil, energy: 1.0}
+    dance: {posture: loose, energy: 1.0}
+    vibe: {posture: loose, energy: 0.7}
+    check_pocket: {posture: rushed, energy: 0.9}
+    freeze: {posture: locked, energy: 0.0}
+    look_at_camera: {posture: confident_collapse, energy: 0.2}
+  seyi:
+    idle: {posture: relaxed_lean, energy: 0.35}
+    talk: {posture: relaxed_lean, energy: 0.45}
+    look: {posture: side_glance, energy: 0.3}
+    turn: {posture: slow_turn, energy: 0.25}
+    look_at_camera: {posture: deadpan_hold, energy: 0.15}
+    laugh: {posture: restrained_laugh, energy: 0.5}
+    freeze: {posture: locked, energy: 0.0}
+  mama:
+    idle: {posture: grounded, energy: 0.3}
+    stand: {posture: grounded, energy: 0.4}
+    talk: {posture: grounded_authority, energy: 0.65}
+    turn: {posture: slow_turn, energy: 0.25}
+    look_at_camera: {posture: knowing_stare, energy: 0.1}
+    angry: {posture: hands_on_hips, energy: 0.8}
+    freeze: {posture: locked, energy: 0.0}
