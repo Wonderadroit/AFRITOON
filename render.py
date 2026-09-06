@@ -10,7 +10,6 @@ def main() -> None:
     parser.add_argument("scene", help="Path to a YAML scene")
     parser.add_argument("-o", "--output", help="Output MP4 path")
     args = parser.parse_args()
-
     scene = Scene.load(args.scene)
     stem = args.scene.rsplit("/", 1)[-1].rsplit(".", 1)[0]
     output = args.output or f"output/{stem}.mp4"
