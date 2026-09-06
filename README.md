@@ -4,52 +4,74 @@ A code-first animation engine for short-form African relatable comedy.
 
 ## Character system
 
-AFRITOON now has a reusable recurring cast:
+AFRITOON has a reusable recurring cast:
 
 - **Tunde** — the confident mistake.
 - **Seyi** — the deadpan human reaction button.
 - **Mama** — the final boss of information.
 
-The character system separates:
+The production chain is:
 
 ```text
 CHARACTER ARTWORK
       ↓
 CHARACTER ASSET CONTRACT
       ↓
-POSE / EXPRESSION / EMOTION STATE
+POSE + EXPRESSION + MOUTH STATE
       ↓
 INTERACTION / SCENE DIRECTOR
       ↓
-LAYERED CHARACTER RIG
+CHARACTER-SPECIFIC RENDERER
       ↓
-9:16 FRAME / VIDEO
+9:16 FRAME
+      ↓
+FFMPEG
+      ↓
+MP4
 ```
 
-The canonical front masters are original human-looking SVG artwork. The
-repository also contains a deterministic builder for the 16-layer rig contract
-and a view policy that explicitly falls back to the front master when a
+The canonical front masters are original human-looking SVG artwork. Each
+character is resolved independently; Seyi and Mama are never substituted with
+Tunde. The view policy explicitly falls back to the front master when a genuine
 three-quarter or side master has not yet been authored.
 
-## Character build
+## Build character layers
 
 ```bash
 python tools/validate_characters.py
 python tools/build_character_layers.py --character all
 ```
 
-For PNG layers when CairoSVG is available:
+To also create raster PNG layers when CairoSVG is installed:
 
 ```bash
 python tools/build_character_layers.py --character all --png
 ```
 
-The generated front layers are build artifacts. The SVG masters remain the
-source of truth for appearance.
+Generated layers are build artifacts. SVG masters remain the source of truth.
+
+## Render a frame
+
+```bash
+python tools/render_frame.py scenes/trio_showcase.yaml --time 3.2 --output output/frame.png
+```
+
+## Render a scene to MP4
+
+Requires FFmpeg. Audio is optional and should be user-supplied, licensed, or
+platform-native rather than committed to the repository.
+
+```bash
+python tools/render_scene.py scenes/trio_showcase.yaml --output output/trio.mp4
+```
+
+With audio:
+
+```bash
+python tools/render_scene.py scenes/trio_showcase.yaml --output output/trio.mp4 --audio audio/trend.mp3
+```
 
 ## Scene engine
-
-AFRITOON turns scene data into short-form vertical animation.
 
 ```text
 IDEA / TREND / SONG
@@ -64,9 +86,9 @@ IDEA / TREND / SONG
 ```
 
 Current foundations include 1080×1920 output, YAML scenes, timeline actions,
-character definitions, emotions, expressions, recurring interactions,
-multi-character cast state, layered-rig primitives, SVG master rendering and
-FFmpeg encoding.
+character definitions, emotions, expressions, independent mouth states,
+recurring interactions, multi-character cast state, layered-rig primitives,
+SVG master rendering and FFmpeg encoding.
 
 ## Development rule
 
@@ -77,6 +99,6 @@ what is worth building.
 
 ## Music
 
-Do not commit copyrighted songs to the repository. The renderer may accept
+Do not commit copyrighted songs to the repository. The renderer accepts
 user-supplied or appropriately licensed/platform-native audio during
 production.
