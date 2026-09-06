@@ -14,4 +14,4 @@ def test_all_core_characters_have_canonical_front_masters():
 
 def test_character_layer_contract_is_stable():
     resolver = CharacterAssetResolver(".")
-    assert resolver.resolve("tunde").layers.missing() == list(LAYER_NAMES)
+    assert resolver.resolve("tunde").layers.missing() == LAYER_NAMES
