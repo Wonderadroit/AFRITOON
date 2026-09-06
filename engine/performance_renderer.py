@@ -1,9 +1,8 @@
 """Apply AFRITOON performance state to canonical character artwork.
 
-This is the bridge between the scene/performance model and the current SVG masters.
-It intentionally keeps artwork separate from timing logic: the renderer can later
-swap these deterministic transforms for true layered-rig joints without changing
-scene contracts.
+The renderer keeps the canonical artwork intact and applies deterministic,
+character-specific performance motion around the artwork.  This is the safe
+intermediate layer before true per-joint layered-rig animation is enabled.
 """
 
 from __future__ import annotations
@@ -35,27 +34,30 @@ PROFILES = {
     "mama": CharacterPerformanceProfile("#8b5a3c"),
 }
 
-
-POSE_MOTION = {
-    "idle": (0.0, 0.0, 1.0),
-    "talk": (0.0, -2.0, 1.0),
-    "look": (0.0, 0.0, 1.0),
-    "turn": (2.0, 0.0, 1.0),
-    "shock": (-6.0, -10.0, 1.04),
-    "shocked": (-6.0, -10.0, 1.04),
-    "freeze": (0.0, 0.0, 1.0),
-    "dance": (4.0, -6.0, 1.03),
-    "vibe": (-2.0, -3.0, 1.02),
-    "check_pocket": (3.0, 4.0, 1.0),
-    "look_at_camera": (0.0, 0.0, 1.01),
-    "laugh": (2.0, -4.0, 1.02),
-    "angry": (0.0, 2.0, 1.01),
-    "stand": (0.0, 0.0, 1.0),
+# Motion is deliberately different for each character.  These are semantic
+# performance motions, not generic "move everything" presets.
+CHARACTER_MOTION = {
+    "tunde": {
+        "idle": (0.0, 0.0, 1.0), "talk": (0.0, -2.0, 1.0),
+        "shock": (-6.0, -10.0, 1.04), "shocked": (-6.0, -10.0, 1.04),
+        "freeze": (0.0, 0.0, 1.0), "dance": (4.0, -6.0, 1.03),
+        "vibe": (-2.0, -3.0, 1.02), "check_pocket": (3.0, 4.0, 1.0),
+        "look_at_camera": (0.0, 0.0, 1.01), "laugh": (2.0, -4.0, 1.02),
+        "stand": (0.0, 0.0, 1.0),
+    },
+    "seyi": {
+        "idle": (0.0, 0.0, 1.0), "talk": (0.8, -1.0, 1.0),
+        "look": (2.5, 0.0, 1.0), "turn": (5.0, 0.0, 1.0),
+        "look_at_camera": (1.5, 0.0, 1.01), "laugh": (2.0, -2.0, 1.01),
+        "freeze": (0.0, 0.0, 1.0),
+    },
+    "mama": {
+        "idle": (0.0, 0.0, 1.0), "stand": (0.0, 0.0, 1.0),
+        "talk": (-1.0, 1.0, 1.01), "turn": (-4.0, 0.0, 1.0),
+        "look_at_camera": (-1.5, 0.0, 1.02), "angry": (0.0, 2.0, 1.01),
+        "freeze": (0.0, 0.0, 1.0),
+    },
 }
-
-
-def _xy(value: float, size: tuple[int, int]) -> float:
-    return value * size[0] / 600.0
 
 
 def _face_scale(image: Image.Image) -> float:
@@ -74,16 +76,14 @@ def _draw_expression(image: Image.Image, character: str, expression: str, mouth:
     black = "#171717"
     white = "#ffffff"
 
-    # Mask the old eye/brow/mouth artwork before drawing the resolved state.
     _cover_face(draw, profile, s, (202, 235, 288, 305))
     _cover_face(draw, profile, s, (312, 235, 398, 305))
     _cover_face(draw, profile, s, (235, 395, 365, 480))
 
-    eye_y = 330 * s
+    eye_y = profile.eye_y * s
     eye_h = 34 * s
     eye_w = 30 * s
-    centers = (245 * s, 355 * s)
-
+    centers = (profile.left_eye_x * s, profile.right_eye_x * s)
     if expression in {"shocked", "surprised"}:
         eye_w, eye_h = 37 * s, 43 * s
     elif expression == "angry":
@@ -110,10 +110,9 @@ def _draw_expression(image: Image.Image, character: str, expression: str, mouth:
         draw.line((210 * s, 270 * s, 275 * s, 258 * s), fill=black, width=stroke)
         draw.line((325 * s, 258 * s, 390 * s, 270 * s), fill=black, width=stroke)
 
-    mx, my = 300 * s, 435 * s
+    mx, my = 300 * s, profile.mouth_y * s
     if mouth in {"open", "talk_o"}:
         draw.ellipse((mx - 31 * s, my - 27 * s, mx + 31 * s, my + 27 * s), fill=black)
-        draw.ellipse((mx - 18 * s, my - 9 * s, mx + 18 * s, my + 12 * s), fill="#6f3030")
     elif mouth in {"small_open", "talk_e"}:
         draw.ellipse((mx - 23 * s, my - 17 * s, mx + 23 * s, my + 17 * s), fill=black)
     elif mouth in {"talk_a", "talk_rest"}:
@@ -129,18 +128,18 @@ def _draw_expression(image: Image.Image, character: str, expression: str, mouth:
 
 
 def apply_performance(image: Image.Image, state: PerformanceState, character: str) -> Image.Image:
-    """Render a visible performance change while preserving the source artwork."""
+    """Render expression, mouth and character-specific body motion."""
     image = image.convert("RGBA")
     _draw_expression(image, character, state.expression, state.mouth)
 
-    rotation, y_shift, scale = POSE_MOTION.get(state.pose, (0.0, 0.0, 1.0))
+    motions = CHARACTER_MOTION.get(character, CHARACTER_MOTION["tunde"])
+    rotation, y_shift, scale = motions.get(state.pose, motions.get("idle", (0.0, 0.0, 1.0)))
     if state.pose == "dance":
         rotation *= math.sin(1.0)
     if scale != 1.0:
         image = image.resize((max(1, round(image.width * scale)), max(1, round(image.height * scale))), Image.Resampling.LANCZOS)
     if rotation:
         image = image.rotate(rotation, resample=Image.Resampling.BICUBIC, expand=True)
-
     if y_shift:
         shifted = Image.new("RGBA", image.size, (0, 0, 0, 0))
         shifted.alpha_composite(image, (0, round(y_shift * image.width / 600.0)))
@@ -149,7 +148,7 @@ def apply_performance(image: Image.Image, state: PerformanceState, character: st
 
 
 def performance_for_character(scene: CastScene, character: str, frame_time: float) -> PerformanceState:
-    """Resolve the visible performance state from canonical scene state + dialogue."""
+    """Resolve visible performance from canonical scene state + dialogue."""
     state = scene.state_at(frame_time)
     if character not in state.characters:
         raise ValueError(f"Character not present in scene: {character}")
@@ -157,8 +156,7 @@ def performance_for_character(scene: CastScene, character: str, frame_time: floa
     line = scene.dialogue_at(frame_time)
     mouth = ()
     if line is not None and line.character.strip().lower() == character:
-        duration = line.duration
-        mouth = mouth_cues(line.text, line.at, duration)
+        mouth = mouth_cues(line.text, line.at, line.duration)
     active = "closed"
     for cue in mouth:
         if cue.at <= frame_time < cue.at + cue.duration:
