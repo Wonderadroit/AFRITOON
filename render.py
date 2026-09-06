@@ -1,36 +1,21 @@
-# AFRITOON
+"""CLI entry point for AFRITOON v0.1."""
 
-A code-first animation engine for short-form African relatable comedy.
+import argparse
+from engine.scene import Scene
+from engine.renderer import render
 
-## v0.1
 
-The first vertical-video prototype provides:
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Render an AFRITOON scene")
+    parser.add_argument("scene")
+    parser.add_argument("-o", "--output")
+    args = parser.parse_args()
+    scene = Scene.load(args.scene)
+    output = args.output or f"output/{args.scene.rsplit('/', 1)[-1].rsplit('.', 1)[0]}.mp4"
+    print(f"Rendering: {scene.title}")
+    print(f"Output: {output}")
+    print(render(scene, output))
 
-- 1080x1920 (9:16) rendering
-- YAML-driven scenes
-- Procedural characters
-- Multiple actions and expressions
-- Procedural backgrounds
-- MP4 output through FFmpeg
 
-## Quick start
-
-```bash
-cd ~/AFRITOON
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python render.py scenes/tunde_test.yaml
-```
-
-The first test renders to `output/tunde_test.mp4`.
-
-## Direction
-
-AFRITOON is deliberately built around a fast loop:
-
-**idea → scene → render → watch → improve → publish**
-
-The engine is not intended to become a generic animation suite. We will build the primitives needed to make funny, repeatable Shorts quickly: characters, actions, expressions, camera movement, dialogue timing, music timing and reusable scene definitions.
-
-Copyright and music rights remain outside the renderer. Do not commit copyrighted music into the repository; use appropriately licensed or platform-native audio when publishing.
+if __name__ == "__main__":
+    main()

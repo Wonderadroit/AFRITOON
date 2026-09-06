@@ -1,2 +1,1 @@
-Pillow>=11.0
-PyYAML>=6.0
+"""AFRITOON animation engine."""
