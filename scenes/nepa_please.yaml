@@ -1,0 +1,65 @@
+scene:
+  title: "NEPA, Please!"
+  duration: 24.0
+  interaction: trio_problem
+  format: vertical_9_16
+  characters:
+    - id: tunde
+      position: [330, 1450]
+      scale: 1.0
+    - id: seyi
+      position: [570, 1450]
+      scale: 0.95
+    - id: mama
+      position: [810, 1450]
+      scale: 1.05
+  beats:
+    - at: 0.0
+      emotion: funny
+    - at: 7.0
+      emotion: shocked
+    - at: 14.0
+      emotion: anxious
+    - at: 20.0
+      emotion: deadpan
+  dialogue:
+    - character: tunde
+      at: 0.8
+      duration: 2.8
+      text: "Finally, everybody don go."
+    - character: tunde
+      at: 4.1
+      duration: 2.8
+      text: "Today, I go enjoy myself."
+    - character: tunde
+      at: 7.3
+      duration: 1.4
+      text: "Ah! NEPA!"
+    - character: tunde
+      at: 9.4
+      duration: 2.6
+      text: "Please bring light before Mama comes back."
+    - character: seyi
+      at: 12.8
+      duration: 1.2
+      text: "You dey pray for light now?"
+    - character: tunde
+      at: 14.5
+      duration: 2.1
+      text: "Seyi, this one serious."
+    - character: mama
+      at: 18.4
+      duration: 0.8
+      text: "Tunde."
+    - character: tunde
+      at: 19.8
+      duration: 1.0
+      text: "Yes ma?"
+    - character: mama
+      at: 21.0
+      duration: 1.4
+      text: "Remove that disc."
+    - character: seyi
+      at: 22.8
+      duration: 0.8
+      text: "Hmm."
