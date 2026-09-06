@@ -1,15 +1,20 @@
 """Data-first multi-character scene state for AFRITOON."""
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, Iterable, Tuple
+
+import yaml
 
 from .character_library import DEFAULT_LIBRARY, CharacterInstance
 from .interactions import CharacterCue, interaction
+
 
 @dataclass(frozen=True)
 class CastState:
     time: float
     characters: Dict[str, CharacterInstance]
+
 
 class CastScene:
     def __init__(self, name: str, duration: float, characters: Iterable[CharacterInstance]):
@@ -30,11 +35,35 @@ class CastScene:
         end = max((cue.time for cue in spec.cues), default=0.0)
         return cls(name, float(duration if duration is not None else end + 1.0), instances)
 
+    @classmethod
+    def from_yaml(cls, path: str | Path):
+        """Load cast composition, positions and interaction from scene YAML."""
+        source = Path(path)
+        data = yaml.safe_load(source.read_text(encoding="utf-8")) or {}
+        raw = data.get("scene", data)
+        interaction_name = str(raw.get("interaction", ""))
+        duration = float(raw.get("duration", 0.0))
+        items = raw.get("characters", [])
+        if not items:
+            return cls.from_interaction(interaction_name, duration or None)
+
+        instances = []
+        for item in items:
+            cid = str(item["id"])
+            position = item.get("position", [540, 1150])
+            if len(position) != 2:
+                raise ValueError(f"Invalid position for {cid}")
+            instances.append(DEFAULT_LIBRARY.spawn(
+                cid,
+                x=float(position[0]),
+                y=float(position[1]),
+                scale=float(item.get("scale", 1.0)),
+            ))
+        return cls(interaction_name or source.stem, duration, instances)
+
     def state_at(self, t: float) -> CastState:
         now = max(0.0, min(float(t), self.duration))
         states = dict(self.characters)
-        # Interaction cues are intentionally sparse: the latest cue for each
-        # character remains active until that character receives another cue.
         try:
             cues = interaction(self.name).cues
         except ValueError:
