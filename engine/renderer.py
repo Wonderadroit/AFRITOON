@@ -33,6 +33,7 @@ def render(scene: Scene, output: str) -> str:
     """Render a Scene to a 9:16 H.264 MP4."""
     if shutil.which("ffmpeg") is None:
         raise RuntimeError("FFmpeg was not found. Install it with: pkg install ffmpeg")
+
     os.makedirs(os.path.dirname(output) or ".", exist_ok=True)
     frame_count = max(1, int(round(scene.duration * FPS)))
 
@@ -79,4 +80,5 @@ def render(scene: Scene, output: str) -> str:
             )
         except subprocess.CalledProcessError as exc:
             raise RuntimeError(f"FFmpeg failed:\n{exc.stderr[-2000:]}") from exc
+
     return output
