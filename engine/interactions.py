@@ -31,7 +31,7 @@ INTERACTIONS = {
     "tunde_mama_exposed": Interaction(
         name="tunde_mama_exposed",
         cues=(
-            CharacterCue(0.0, "tunde", "talk", "confident" if False else "happy"),
+            CharacterCue(0.0, "tunde", "talk", "happy"),
             CharacterCue(2.0, "mama", "stand", "neutral"),
             CharacterCue(2.6, "tunde", "freeze", "shocked"),
             CharacterCue(3.4, "mama", "look_at_camera", "deadpan"),
