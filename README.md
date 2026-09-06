@@ -24,6 +24,7 @@ cd ~/AFRITOON
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+pytest -q
 python render.py scenes/tunde_test.yaml
 ```
 
