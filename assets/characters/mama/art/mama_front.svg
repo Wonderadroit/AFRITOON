@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1100">
+<g stroke="#171717" stroke-width="12" stroke-linejoin="round" stroke-linecap="round">
+<path fill="#5a4538" d="M205 735 Q300 700 395 735 L440 1015 L160 1015Z"/>
+<path fill="#f0dfc8" d="M155 995 Q205 975 255 1000 L255 1040 L145 1040Z"/><path fill="#f0dfc8" d="M345 1000 Q395 975 445 995 L455 1040 L345 1040Z"/>
+<path fill="#d9a9b7" d="M205 505 Q300 470 395 505 L430 755 Q300 805 170 755Z"/>
+<path fill="#8b5a3c" d="M270 465 L270 530 Q300 550 330 530 L330 465Z"/>
+<ellipse fill="#8b5a3c" cx="175" cy="335" rx="38" ry="55"/><ellipse fill="#8b5a3c" cx="425" cy="335" rx="38" ry="55"/>
+<ellipse fill="#8b5a3c" cx="300" cy="335" rx="160" ry="190"/>
+<!-- headwrap --> <path fill="#6f4a78" d="M145 300 Q150 105 300 90 Q450 105 455 300 L415 250 Q365 195 300 195 Q235 195 185 250Z"/><path fill="#6f4a78" d="M170 185 Q300 35 430 185 Q405 235 375 245 Q300 205 225 245 Q195 235 170 185Z"/>
+<ellipse fill="#fff" cx="245" cy="330" rx="34" ry="40"/><ellipse fill="#fff" cx="355" cy="330" rx="34" ry="40"/>
+<circle fill="#171717" cx="250" cy="336" r="12"/><circle fill="#171717" cx="360" cy="336" r="12"/>
+<!-- knowing brows --> <path fill="none" d="M205 275 Q245 245 275 270"/><path fill="none" d="M325 270 Q355 245 395 275"/>
+<path fill="none" d="M300 340 L288 395 Q300 405 315 395"/><path fill="none" d="M265 435 Q300 420 335 435"/>
+<!-- hands on hips --> <path fill="#8b5a3c" d="M205 545 Q145 585 150 690 Q155 725 185 720 L225 650Z"/><path fill="#8b5a3c" d="M395 545 Q455 585 450 690 Q445 725 415 720 L375 650Z"/>
+</g></svg>
