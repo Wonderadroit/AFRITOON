@@ -1,8 +1,4 @@
-"""Render a multi-character AFRITOON scene from canonical SVG masters.
-
-This is the artwork bridge between scene direction and the future 16-layer
-PNG rigs. It keeps character art independent from timing and interaction code.
-"""
+"""Render a multi-character AFRITOON scene from canonical SVG masters."""
 
 from __future__ import annotations
 
@@ -12,7 +8,8 @@ from typing import Mapping
 from PIL import Image
 
 from .cast_scene import CastScene
-from .svg_renderer import master_path, rasterize_svg
+from .svg_renderer import rasterize_svg
+from .view_policy import resolve_view
 
 W, H = 1080, 1920
 
@@ -24,11 +21,11 @@ def render_master_cast(
     positions: Mapping[str, tuple[float, float, float]] | None = None,
     character_width: int = 420,
 ) -> Image.Image:
-    """Compose the current cast using human-looking SVG master artwork.
+    """Compose the cast from the best available canonical artwork.
 
-    `positions` maps character id to `(center_x, baseline_y, scale)`.
-    Expressions/poses are resolved by CastScene but are not baked into these
-    static masters; true facial and body animation arrives with layered rigs.
+    Missing three-quarter/side masters explicitly fall back to the front
+    master. This is a build-state decision, never a claim that the missing
+    view has been authored.
     """
     canvas = Image.new("RGBA", (W, H), (247, 243, 235, 255))
     state = scene.state_at(frame_time)
@@ -40,12 +37,9 @@ def render_master_cast(
 
     for character_id, instance in state.characters.items():
         x, baseline, scale = positions.get(character_id, (540.0, 1500.0, 0.8))
-        path = master_path(repo_root, character_id, instance.view)
-        if not path.exists():
-            continue
+        resolved = resolve_view(repo_root, character_id, instance.view)
         width = max(1, int(character_width * scale))
-        # Masters use a square-ish viewBox; preserve their aspect ratio.
-        artwork = rasterize_svg(path, width, width)
+        artwork = rasterize_svg(resolved.path, width, width)
         px = int(x - artwork.width / 2)
         py = int(baseline - artwork.height)
         canvas.alpha_composite(artwork, (px, py))
