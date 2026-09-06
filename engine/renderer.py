@@ -21,17 +21,14 @@ def _font(size: int):
 
 def _draw_centered(draw, text, y, font, fill=(25, 25, 25)):
     box = draw.textbbox((0, 0), text, font=font)
-    x = (W - (box[2] - box[0])) / 2
-    draw.text((x, y), text, font=font, fill=fill)
+    draw.text(((W - (box[2] - box[0])) / 2, y), text, font=font, fill=fill)
 
 
 def render(scene: Scene, output: str) -> str:
-    """Render a Scene to a 9:16 H.264 MP4."""
     if shutil.which("ffmpeg") is None:
         raise RuntimeError("FFmpeg was not found. Install it with: pkg install ffmpeg")
     os.makedirs(os.path.dirname(output) or ".", exist_ok=True)
     frame_count = max(1, int(round(scene.duration * FPS)))
-
     with tempfile.TemporaryDirectory(prefix="afritoon-") as tmp:
         for i in range(frame_count):
             t = i / FPS
