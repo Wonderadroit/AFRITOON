@@ -3,19 +3,12 @@
 The current masters are intentionally compact SVGs. This builder extracts
 semantic parts into the 16-layer contract without changing the master source.
 It never invents new artwork: generated layers remain derived build output.
-
-Usage:
-    python tools/build_character_layers.py --character all
-    python tools/build_character_layers.py --character tunde --png
-
-PNG output requires CairoSVG; SVG layer output requires only Python stdlib.
 """
 
 from __future__ import annotations
 
 import argparse
 import copy
-import sys
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -29,14 +22,13 @@ LAYERS = (
     "left_brow", "right_brow", "nose", "mouth",
 )
 
-# Direct-child indices in the current original SVG masters. Each index is
-# zero-based within the first drawing group. Empty lists intentionally create
-# transparent placeholders where the master has no visible part yet.
+# Direct-child indices in the first drawing group of each current master.
+# Empty lists create transparent placeholders for parts not yet drawn.
 MAP = {
     "tunde": {
         "back_hair": [], "legs": [0], "shoes": [1, 2], "torso": [3, 4],
-        "left_arm": [5], "right_arm": [6], "neck": [7], "head": [8, 9],
-        "ears": [10, 11], "front_hair": [], "left_eye": [12, 14],
+        "left_arm": [5], "right_arm": [6], "neck": [7], "head": [10],
+        "ears": [8, 9], "front_hair": [11], "left_eye": [12, 14],
         "right_eye": [13, 15], "left_brow": [16], "right_brow": [17],
         "nose": [18], "mouth": [19],
     },
@@ -62,15 +54,11 @@ def _children(master: Path) -> tuple[ET.Element, list[ET.Element]]:
     groups = [node for node in root if node.tag.rsplit("}", 1)[-1] == "g"]
     if not groups:
         raise ValueError(f"No drawing group found in {master}")
-    group = groups[0]
-    return root, list(group)
+    return root, list(groups[0])
 
 
 def _write_layer(master_root: ET.Element, nodes: list[ET.Element], target: Path) -> None:
-    root = ET.Element(f"{{{NS}}}svg", {
-        "xmlns": NS,
-        "viewBox": master_root.attrib.get("viewBox", "0 0 600 1100"),
-    })
+    root = ET.Element(f"{{{NS}}}svg", {"viewBox": master_root.attrib.get("viewBox", "0 0 600 1100")})
     group = ET.SubElement(root, f"{{{NS}}}g")
     for node in nodes:
         group.append(copy.deepcopy(node))
@@ -83,9 +71,8 @@ def build(character_id: str, png: bool = False) -> None:
     if not master.exists():
         raise FileNotFoundError(master)
     root, children = _children(master)
-    mapping = MAP[character_id]
     for layer in LAYERS:
-        nodes = [children[i] for i in mapping[layer] if i < len(children)]
+        nodes = [children[i] for i in MAP[character_id][layer] if i < len(children)]
         target = ROOT / "assets" / "characters" / character_id / "layers" / "front" / f"{layer}.svg"
         _write_layer(root, nodes, target)
         if png:
