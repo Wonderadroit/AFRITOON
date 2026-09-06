@@ -1,6 +1,7 @@
 """Scene loading and timeline evaluation."""
 
 from dataclasses import dataclass
+from pathlib import Path
 import yaml
 from .actions import Action
 
@@ -13,9 +14,22 @@ class Scene:
     timeline: list[Action]
 
     @classmethod
-    def load(cls, path: str) -> "Scene":
+    def load(cls, path: str | Path) -> "Scene":
         with open(path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
         raw = data.get("scene", data)
-        timeline = [Action(float(x["time"]), str(x["action"]), float(x.get("duration", 0))) for x in raw.get("timeline", [])]
-        return cls(str(data.get("title", path)), float(raw.get("duration", 5)), raw.get("character", {}), timeline)
+        timeline = [
+            Action(
+                float(item["time"]),
+                str(item["action"]),
+                float(item.get("duration", 0)),
+            )
+            for item in raw.get("timeline", [])
+        ]
+        timeline.sort(key=lambda item: item.time)
+        return cls(
+            title=str(data.get("title", Path(path).stem)),
+            duration=float(raw.get("duration", 5)),
+            character=dict(raw.get("character", {})),
+            timeline=timeline,
+        )
