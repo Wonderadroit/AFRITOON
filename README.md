@@ -2,35 +2,54 @@
 
 A code-first animation engine for short-form African relatable comedy.
 
-## v0.1 — Scene Animation Engine
+## Character system
 
-AFRITOON turns a small YAML scene definition into a vertical MP4 using procedural characters and FFmpeg.
+AFRITOON now has a reusable recurring cast:
 
-### Current primitives
+- **Tunde** — the confident mistake.
+- **Seyi** — the deadpan human reaction button.
+- **Mama** — the final boss of information.
 
-- 1080×1920 (9:16) output
-- YAML scene definitions
-- Timeline-based actions
-- Procedural Tunde character
-- Basic expressions and movement
-- Procedural background
-- FFmpeg MP4 encoding
-- Smoke tests for scene/timeline logic
+The character system separates:
 
-### Quick start
-
-```bash
-cd ~/AFRITOON
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-pytest -q
-python render.py scenes/tunde_test.yaml
+```text
+CHARACTER ARTWORK
+      ↓
+CHARACTER ASSET CONTRACT
+      ↓
+POSE / EXPRESSION / EMOTION STATE
+      ↓
+INTERACTION / SCENE DIRECTOR
+      ↓
+LAYERED CHARACTER RIG
+      ↓
+9:16 FRAME / VIDEO
 ```
 
-Output: `output/tunde_test.mp4`
+The canonical front masters are original human-looking SVG artwork. The
+repository also contains a deterministic builder for the 16-layer rig contract
+and a view policy that explicitly falls back to the front master when a
+three-quarter or side master has not yet been authored.
 
-## Architecture direction
+## Character build
+
+```bash
+python tools/validate_characters.py
+python tools/build_character_layers.py --character all
+```
+
+For PNG layers when CairoSVG is available:
+
+```bash
+python tools/build_character_layers.py --character all --png
+```
+
+The generated front layers are build artifacts. The SVG masters remain the
+source of truth for appearance.
+
+## Scene engine
+
+AFRITOON turns scene data into short-form vertical animation.
 
 ```text
 IDEA / TREND / SONG
@@ -44,14 +63,20 @@ IDEA / TREND / SONG
       MP4 9:16
 ```
 
-The engine is intentionally specialized for fast, repeatable short-form comedy. We will add only primitives that make production faster: characters, reusable actions, expressions, camera movement, dialogue timing, music timing and asset-based characters.
+Current foundations include 1080×1920 output, YAML scenes, timeline actions,
+character definitions, emotions, expressions, recurring interactions,
+multi-character cast state, layered-rig primitives, SVG master rendering and
+FFmpeg encoding.
 
 ## Development rule
 
 **Build → render → watch → improve → publish.**
 
-Do not turn AFRITOON into a generic animation suite before the content proves what is worth building.
+Do not turn AFRITOON into a generic animation suite before the content proves
+what is worth building.
 
 ## Music
 
-Do not commit copyrighted songs to the repository. The renderer may accept user-supplied or appropriately licensed/platform-native audio during production.
+Do not commit copyrighted songs to the repository. The renderer may accept
+user-supplied or appropriately licensed/platform-native audio during
+production.
