@@ -31,6 +31,7 @@ def render(scene: Scene, output: str) -> str:
         raise RuntimeError("FFmpeg was not found. Install it with: pkg install ffmpeg")
     os.makedirs(os.path.dirname(output) or ".", exist_ok=True)
     frame_count = max(1, int(round(scene.duration * FPS)))
+
     with tempfile.TemporaryDirectory(prefix="afritoon-") as tmp:
         for i in range(frame_count):
             t = i / FPS
