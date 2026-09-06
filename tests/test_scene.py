@@ -10,4 +10,5 @@ def test_scene_load(tmp_path):
     scene = Scene.load(str(p))
     assert scene.title == "Test"
     assert scene.duration == 3
+    assert scene.character["name"] == "Tunde"
     assert scene.timeline[0].name == "idle"
