@@ -1,4 +1,9 @@
-"""Render a reusable AFRITOON cast without coupling scenes to final artwork."""
+"""Render a reusable AFRITOON cast.
+
+The canonical production path uses the character SVG masters. The old
+procedural Tunde renderer remains only as an explicit fallback for environments
+that cannot rasterize SVG artwork.
+"""
 
 from __future__ import annotations
 
@@ -6,11 +11,11 @@ from PIL import Image, ImageDraw
 
 from .cast_scene import CastScene
 from .character import Tunde
+from .master_cast_renderer import render_master_cast
+from .svg_renderer import SVGRenderUnavailable
 
 W, H = 1080, 1920
 
-# Stage positions are deliberately data-driven and easy to replace when
-# production artwork is rasterized into the layered rig.
 DEFAULT_POSITIONS = {
     "tunde": (280, 1180, 0.78),
     "seyi": (540, 1180, 0.72),
@@ -19,8 +24,7 @@ DEFAULT_POSITIONS = {
 
 
 def _fallback_character(instance):
-    """Return the legacy procedural character only until layered assets exist."""
-    definition = instance.definition
+    """Legacy fallback used only when canonical SVG rendering is unavailable."""
     return Tunde(
         x=instance.x,
         y=instance.y,
@@ -30,12 +34,11 @@ def _fallback_character(instance):
     )
 
 
-def render_cast(scene: CastScene, frame_time: float, size=(W, H)) -> Image.Image:
-    """Render one frame of a CastScene.
+def _render_legacy_fallback(scene: CastScene, frame_time: float, size=(W, H)) -> Image.Image:
+    """Render the historical procedural fallback.
 
-    The renderer intentionally owns composition, not character identity. Once
-    layered PNG artwork is available, this function can select the character's
-    LayeredRig while keeping the same CastScene API.
+    This path is intentionally not the production character renderer. It is
+    retained so the public API still works in minimal Termux environments.
     """
     img = Image.new("RGBA", size, (247, 243, 235, 255))
     draw = ImageDraw.Draw(img)
@@ -47,10 +50,41 @@ def render_cast(scene: CastScene, frame_time: float, size=(W, H)) -> Image.Image
             x, y, scale = DEFAULT_POSITIONS.get(character_id, (540, 1150, 1.0))
             active = active.__class__(
                 definition=active.definition,
-                x=x, y=y, scale=scale,
-                view=active.view, pose=active.pose,
+                x=x,
+                y=y,
+                scale=scale,
+                view=active.view,
+                pose=active.pose,
                 expression=active.expression,
             )
         _fallback_character(active).draw(draw)
 
     return img
+
+
+def render_cast(
+    scene: CastScene,
+    frame_time: float,
+    size=(W, H),
+    repo_root: str = ".",
+) -> Image.Image:
+    """Render one cast frame using canonical artwork when possible.
+
+    ``render_cast`` remains the stable public API. Production rendering now
+    resolves each character independently, so Seyi and Mama can never be
+    silently rendered as Tunde. If CairoSVG is unavailable, the renderer falls
+    back to the legacy procedural path rather than failing import-time.
+    """
+    if tuple(size) != (W, H):
+        # The master renderer currently owns the canonical 1080x1920 stage.
+        # Keep the historical API contract for non-standard test sizes.
+        try:
+            image = render_master_cast(scene, frame_time, repo_root=repo_root)
+            return image.resize(tuple(size), Image.Resampling.LANCZOS)
+        except (SVGRenderUnavailable, FileNotFoundError):
+            return _render_legacy_fallback(scene, frame_time, size=size)
+
+    try:
+        return render_master_cast(scene, frame_time, repo_root=repo_root)
+    except (SVGRenderUnavailable, FileNotFoundError):
+        return _render_legacy_fallback(scene, frame_time, size=size)
