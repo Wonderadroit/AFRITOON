@@ -1,0 +1,63 @@
+scene:
+  title: "NEPA, Please!"
+  duration: 24.0
+  interaction: trio_problem
+  format: vertical_9_16
+  characters:
+    - id: tunde
+      position: [300, 1320]
+      scale: 1.0
+    - id: seyi
+      position: [540, 1320]
+      scale: 0.95
+    - id: mama
+      position: [790, 1320]
+      scale: 1.05
+  beats:
+    - at: 0.0
+      emotion: funny
+    - at: 6.0
+      emotion: surprised
+    - at: 15.0
+      emotion: shocked
+    - at: 20.0
+      emotion: deadpan
+    - at: 23.0
+      emotion: funny
+  dialogue:
+    - at: 0.8
+      character: tunde
+      text: "Finally, I get the house to myself."
+    - at: 3.0
+      character: tunde
+      text: "This afternoon is going to be peaceful."
+    - at: 5.0
+      character: tunde
+      text: "NEPA!"
+    - at: 7.0
+      character: tunde
+      text: "Ah-ah. Not now!"
+    - at: 10.0
+      character: seyi
+      text: "You dey wait for light?"
+    - at: 12.0
+      character: tunde
+      text: "Of course."
+    - at: 14.0
+      character: tunde
+      text: "They must bring it before Mama comes back."
+    - at: 18.0
+      character: mama
+      text: "Tunde."
+    - at: 19.5
+      character: tunde
+      text: "Yes ma?"
+    - at: 21.0
+      character: mama
+      text: "Why is the television not connected?"
+    - at: 22.5
+      character: tunde
+      text: "I was just... checking it."
+    - at: 23.4
+      character: mama
+      text: "And remove that disc inside."
