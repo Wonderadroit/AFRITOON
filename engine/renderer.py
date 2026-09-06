@@ -65,19 +65,14 @@ def render(scene: Scene, output: str) -> str:
             draw.text((60, H - 150), action.upper(), font=_font(42), fill=(25, 25, 25))
             img.save(os.path.join(tmp, f"{i:06d}.png"))
 
+        command = [
+            "ffmpeg", "-y", "-framerate", str(FPS),
+            "-i", os.path.join(tmp, "%06d.png"),
+            "-c:v", "libx264", "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart", output,
+        ]
         try:
-            subprocess.run(
-                [
-                    "ffmpeg", "-y", "-framerate", str(FPS),
-                    "-i", os.path.join(tmp, "%06d.png"),
-                    "-c:v", "libx264", "-pix_fmt", "yuv420p",
-                    "-movflags", "+faststart", output,
-                ],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
+            subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
         except subprocess.CalledProcessError as exc:
             raise RuntimeError(f"FFmpeg failed:\n{exc.stderr[-2000:]}") from exc
 
