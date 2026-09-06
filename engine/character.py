@@ -18,8 +18,7 @@ class Character:
         s = max(0.1, self.scale)
         bounce = int(abs(sin(t * 8.0)) * 22 * s) if self.action in {"dance", "vibe"} else 0
         x, y = self.x, self.y - bounce
-        outline = (25, 25, 25)
-        skin = (180, 125, 80)
+        outline, skin = (25, 25, 25), (180, 125, 80)
         stroke = max(1, int(6 * s))
         r = 105 * s
         draw.ellipse((x-r, y-2*r, x+r, y), fill=skin, outline=outline, width=stroke)
@@ -33,8 +32,8 @@ class Character:
             draw.arc((x-45*s, y-105*s, x+45*s, y-45*s), 0, 180, fill=outline, width=max(1, int(7*s)))
         else:
             draw.line((x-35*s, y-70*s, x+35*s, y-70*s), fill=outline, width=stroke)
-        body_top, body_bottom = y, y + 360*s
-        draw.rounded_rectangle((x-125*s, body_top, x+125*s, body_bottom), radius=max(1, int(35*s)), fill=(50, 95, 170), outline=outline, width=stroke)
+        body_bottom = y + 360*s
+        draw.rounded_rectangle((x-125*s, y, x+125*s, body_bottom), radius=max(1, int(35*s)), fill=(50, 95, 170), outline=outline, width=stroke)
         arm = 165*s
         draw.line((x-105*s, y+45*s, x-arm, y+160*s), fill=skin, width=max(1, int(28*s)))
         draw.line((x+105*s, y+45*s, x+arm, y+160*s), fill=skin, width=max(1, int(28*s)))
