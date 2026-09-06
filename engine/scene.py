@@ -1,61 +1,39 @@
-"""AFRITOON scene primitives."""
-from dataclasses import dataclass, field
-from typing import Any
+from PIL import Image, ImageDraw
+from .character import draw_background, draw_character
+from .scene import Scene, CharacterState
 
 
-@dataclass
-class Action:
-    time: float
-    name: str
-    duration: float = 0.0
-    params: dict[str, Any] = field(default_factory=dict)
+class Renderer:
+    def __init__(self, scene: Scene):
+        self.scene = scene
 
+    def state_at(self, name: str, t: float) -> CharacterState:
+        base = self.scene.characters[name]
+        state = CharacterState(base.x, base.y, base.expression, "idle", base.facing)
+        for action in self.scene.actions.get(name, []):
+            if action.time > t:
+                break
+            state.action = action.name
+            if action.name in {"shock", "shocked", "surprise"}:
+                state.expression = "shock"
+            elif action.name in {"laugh", "happy"}:
+                state.expression = "happy"
+            elif action.name in {"sad", "cry"}:
+                state.expression = "sad"
+            elif action.name in {"angry"}:
+                state.expression = "angry"
+            elif action.name in {"idle", "vibe", "dance", "walk", "run", "check_pocket", "look_at_camera", "shrug"}:
+                if action.params.get("expression"):
+                    state.expression = action.params["expression"]
+        return state
 
-@dataclass
-class CharacterState:
-    x: float = 0.5
-    y: float = 0.68
-    expression: str = "neutral"
-    action: str = "idle"
-    facing: int = 1
-
-
-@dataclass
-class Scene:
-    width: int = 1080
-    height: int = 1920
-    fps: int = 30
-    duration: float = 8.0
-    background: str = "campus"
-    characters: dict[str, CharacterState] = field(default_factory=dict)
-    actions: dict[str, list[Action]] = field(default_factory=dict)
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Scene":
-        cfg = data.get("scene", data)
-        scene = cls(
-            width=int(cfg.get("width", 1080)),
-            height=int(cfg.get("height", 1920)),
-            fps=int(cfg.get("fps", 30)),
-            duration=float(cfg.get("duration", 8)),
-            background=cfg.get("background", "campus"),
-        )
-        chars = cfg.get("characters", {})
-        for name, value in chars.items():
-            scene.characters[name] = CharacterState(
-                x=float(value.get("x", 0.5)),
-                y=float(value.get("y", 0.68)),
-                expression=value.get("expression", "neutral"),
-                facing=int(value.get("facing", 1)),
-            )
-        for item in data.get("actions", []):
-            name = item["character"]
-            scene.actions.setdefault(name, []).append(Action(
-                time=float(item.get("at", item.get("time", 0))),
-                name=item["action"],
-                duration=float(item.get("duration", 0)),
-                params=item.get("params", {}),
-            ))
-        for actions in scene.actions.values():
-            actions.sort(key=lambda a: a.time)
-        return scene
+    def frame(self, t: float) -> Image.Image:
+        img = Image.new("RGB", (self.scene.width, self.scene.height), "white")
+        draw_background(img, self.scene.background)
+        # Render farther characters first.
+        for name in self.scene.characters:
+            state = self.state_at(name, t)
+            draw_character(img, state, name, t)
+        d = ImageDraw.Draw(img)
+        d.text((40, 40), "AFRITOON", fill=(20,20,20))
+        return img

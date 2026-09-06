@@ -1,39 +1,40 @@
-from PIL import Image, ImageDraw
-from .character import draw_background, draw_character
-from .scene import Scene, CharacterState
+scene:
+  width: 1080
+  height: 1920
+  fps: 30
+  duration: 8
+  background: campus
+  characters:
+    Tunde:
+      x: 0.50
+      y: 0.68
+      expression: neutral
+      facing: 1
 
+actions:
+  - character: Tunde
+    at: 0
+    action: idle
+  - character: Tunde
+    at: 1.0
+    action: vibe
+    params:
+      expression: happy
+  - character: Tunde
+    at: 3.0
+    action: shock
+  - character: Tunde
+    at: 4.0
+    action: look_at_camera
+    params:
+      expression: worried
+  - character: Tunde
+    at: 5.5
+    action: dance
+    params:
+      expression: happy
+  - character: Tunde
+    at: 7.3
+    action: freeze
 
-class Renderer:
-    def __init__(self, scene: Scene):
-        self.scene = scene
-
-    def state_at(self, name: str, t: float) -> CharacterState:
-        base = self.scene.characters[name]
-        state = CharacterState(base.x, base.y, base.expression, "idle", base.facing)
-        for action in self.scene.actions.get(name, []):
-            if action.time > t:
-                break
-            state.action = action.name
-            if action.name in {"shock", "shocked", "surprise"}:
-                state.expression = "shock"
-            elif action.name in {"laugh", "happy"}:
-                state.expression = "happy"
-            elif action.name in {"sad", "cry"}:
-                state.expression = "sad"
-            elif action.name in {"angry"}:
-                state.expression = "angry"
-            elif action.name in {"idle", "vibe", "dance", "walk", "run", "check_pocket", "look_at_camera", "shrug"}:
-                if action.params.get("expression"):
-                    state.expression = action.params["expression"]
-        return state
-
-    def frame(self, t: float) -> Image.Image:
-        img = Image.new("RGB", (self.scene.width, self.scene.height), "white")
-        draw_background(img, self.scene.background)
-        # Render farther characters first.
-        for name in self.scene.characters:
-            state = self.state_at(name, t)
-            draw_character(img, state, name, t)
-        d = ImageDraw.Draw(img)
-        d.text((40, 40), "AFRITOON", fill=(20,20,20))
-        return img
+output: output/tunde_test.mp4
