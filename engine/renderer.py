@@ -26,6 +26,7 @@ def _draw_centered(draw, text, y, font, fill=(25, 25, 25)):
 
 
 def render(scene: Scene, output: str) -> str:
+    """Render a Scene to a 9:16 H.264 MP4."""
     if shutil.which("ffmpeg") is None:
         raise RuntimeError("FFmpeg was not found. Install it with: pkg install ffmpeg")
     os.makedirs(os.path.dirname(output) or ".", exist_ok=True)
