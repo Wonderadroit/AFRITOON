@@ -21,14 +21,25 @@ class CharacterInstance:
         return self.definition.id
 
     def with_state(self, *, pose=None, expression=None, view=None):
+        next_view = self.view if view is None else view
+        next_pose = self.pose if pose is None else pose
+        next_expression = self.expression if expression is None else expression
+
+        if next_view not in self.definition.views:
+            raise ValueError(f"Unsupported view for {self.id}: {next_view}")
+        if next_pose not in self.definition.actions:
+            raise ValueError(f"Unsupported action for {self.id}: {next_pose}")
+        if next_expression not in self.definition.expressions:
+            raise ValueError(f"Unsupported expression for {self.id}: {next_expression}")
+
         return CharacterInstance(
             definition=self.definition,
             x=self.x,
             y=self.y,
             scale=self.scale,
-            view=self.view if view is None else view,
-            pose=self.pose if pose is None else pose,
-            expression=self.expression if expression is None else expression,
+            view=next_view,
+            pose=next_pose,
+            expression=next_expression,
         )
 
 
