@@ -1,0 +1,49 @@
+character: tunde
+identity:
+  name: Tunde
+  role: protagonist
+  age_band: young_adult
+  personality: [confident, mischievous, optimistic, often_wrong]
+visual:
+  skin: medium_dark_brown
+  hair: short_low_fade
+  head_ratio: 1.15
+  body: youthful_human_readable
+  silhouette: oversized_head_confident_chest_out
+  wardrobe: graphic_tshirt_jeans_sneakers
+  linework: bold_clean
+  shading: simple_cel
+  comedy_features:
+    - expressive_eyebrows
+    - large_readable_eyes
+    - mischievous_half_smile
+    - dramatic_confidence_collapse
+    - forced_smile_after_embarrassment
+    - repeated_empty_pocket_check
+    - look_at_camera
+artwork_layers:
+  - back_hair
+  - legs
+  - shoes
+  - torso
+  - left_arm
+  - right_arm
+  - neck
+  - head
+  - ears
+  - front_hair
+  - left_eye
+  - right_eye
+  - left_brow
+  - right_brow
+  - nose
+  - mouth
+views: [front, three_quarter, side]
+expressions: [neutral, happy, curious, shocked, deadpan, angry, sad, laughing, surprised]
+actions: [idle, walk, sit, stand, talk, point, look, turn, wave, laugh, cry, shock, angry, surprise, dance, vibe, freeze, check_pocket, shrug, look_at_camera]
+rig_notes:
+  - Keep head and facial features large enough for 9:16 phone viewing.
+  - Preserve silhouette consistency across every view.
+  - Hands and mouth must remain independently animatable.
+  - Do not bake expressions into body artwork.
+  - Do not bake poses into the base character artwork.
