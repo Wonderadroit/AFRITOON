@@ -1,6 +1,6 @@
 # AFRITOON Scene Specification v0.1
 
-A scene is a small declarative YAML file. It describes timing and intent; the renderer decides how to draw frames.
+A scene is declarative YAML describing timing and intent.
 
 ```yaml
 title: "Tunde's First Vibe"
@@ -24,21 +24,6 @@ scene:
       action: dance
 ```
 
-### Current action vocabulary
+Current action vocabulary: `idle`, `vibe`, `dance`, `shock`, `shocked`, `laugh`, `look_at_camera`.
 
-`idle`, `vibe`, `dance`, `shock`, `shocked`, `laugh`, `look_at_camera`.
-
-The vocabulary is intentionally small. New actions should be added when a real episode needs them, not merely because a generic animation system could support them.
-
-### Future extensions
-
-The schema can grow with optional sections for:
-
-- multiple characters
-- camera events
-- dialogue and subtitles
-- audio tracks
-- beat/lyric cues
-- props
-- reusable assets
-- scene transitions
+Future schema sections can add multiple characters, camera events, dialogue/subtitles, audio, beat/lyric cues, props, reusable assets and transitions.

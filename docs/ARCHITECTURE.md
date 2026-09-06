@@ -1,12 +1,6 @@
 # AFRITOON Architecture
 
-## Purpose
-
 AFRITOON is a specialized code-first renderer for short-form African relatable comedy.
-
-The engine separates **what happens** from **how frames are rendered**.
-
-## Pipeline
 
 ```text
 Idea / Trend / Song
@@ -24,9 +18,7 @@ FFmpeg
 9:16 MP4
 ```
 
-## State model
-
-A scene timeline produces a current action at time `t`. The renderer maps that action into character state such as position, bounce and expression. This keeps story timing declarative and makes future additions—camera events, dialogue, audio cues and reusable assets—possible without rewriting the renderer.
+The scene timeline describes **what happens**. The renderer decides **how frames are drawn**. This separation lets us add camera events, dialogue, audio cues and reusable assets without rewriting story logic.
 
 ## Roadmap
 
