@@ -2,18 +2,22 @@
 
 A code-first animation engine for short-form African relatable comedy.
 
-## v0.1
+## v0.1 — Scene Animation Engine
 
-The first vertical-video prototype provides:
+AFRITOON turns a small YAML scene definition into a vertical MP4 using procedural characters and FFmpeg.
 
-- 1080x1920 (9:16) rendering
-- YAML-driven scenes
-- Procedural characters
-- Multiple actions and expressions
-- Procedural backgrounds
-- MP4 output through FFmpeg
+### Current primitives
 
-## Quick start
+- 1080×1920 (9:16) output
+- YAML scene definitions
+- Timeline-based actions
+- Procedural Tunde character
+- Basic expressions and movement
+- Procedural background
+- FFmpeg MP4 encoding
+- Smoke tests for scene/timeline logic
+
+### Quick start
 
 ```bash
 cd ~/AFRITOON
@@ -23,14 +27,30 @@ pip install -r requirements.txt
 python render.py scenes/tunde_test.yaml
 ```
 
-The first test renders to `output/tunde_test.mp4`.
+Output: `output/tunde_test.mp4`
 
-## Direction
+## Architecture direction
 
-AFRITOON is deliberately built around a fast loop:
+```text
+IDEA / TREND / SONG
+        ↓
+   SCENE DEFINITION
+        ↓
+   SCENE DIRECTOR
+        ↓
+   ANIMATION ENGINE
+        ↓
+      MP4 9:16
+```
 
-**idea → scene → render → watch → improve → publish**
+The engine is intentionally specialized for fast, repeatable short-form comedy. We will add only primitives that make production faster: characters, reusable actions, expressions, camera movement, dialogue timing, music timing and asset-based characters.
 
-The engine is not intended to become a generic animation suite. We will build the primitives needed to make funny, repeatable Shorts quickly: characters, actions, expressions, camera movement, dialogue timing, music timing and reusable scene definitions.
+## Development rule
 
-Copyright and music rights remain outside the renderer. Do not commit copyrighted music into the repository; use appropriately licensed or platform-native audio when publishing.
+**Build → render → watch → improve → publish.**
+
+Do not turn AFRITOON into a generic animation suite before the content proves what is worth building.
+
+## Music
+
+Do not commit copyrighted songs to the repository. The renderer may accept user-supplied or appropriately licensed/platform-native audio during production.
