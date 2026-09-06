@@ -1,12 +1,11 @@
-"""Layered 2D character compositor for AFRITOON.
-
-Production artwork is split into transparent layers. Each layer can be
-positioned, scaled and rotated around an anchor without changing scene YAML.
-"""
+"""Layered 2D character compositor for AFRITOON."""
 
 from dataclasses import dataclass
 from pathlib import Path
+
 from PIL import Image
+
+from .svg_renderer import SVGRenderUnavailable, rasterize_svg
 
 
 @dataclass(frozen=True)
@@ -18,7 +17,12 @@ class Transform:
 
 
 class LayeredRig:
-    """Compose named RGBA artwork layers in a deterministic draw order."""
+    """Compose named RGBA artwork layers in deterministic draw order.
+
+    PNG is preferred for production. SVG layers are also accepted so compact
+    vector artwork can remain the source while generated binaries stay out of
+    version control.
+    """
 
     def __init__(self, root: str | Path, order: tuple[str, ...]):
         self.root = Path(root)
@@ -29,17 +33,33 @@ class LayeredRig:
         self.transforms[layer] = transform
 
     def available(self, layer: str) -> bool:
-        return (self.root / f"{layer}.png").exists()
+        return (self.root / f"{layer}.png").exists() or (self.root / f"{layer}.svg").exists()
+
+    def _load(self, name: str) -> Image.Image | None:
+        png = self.root / f"{name}.png"
+        if png.exists():
+            return Image.open(png).convert("RGBA")
+        svg = self.root / f"{name}.svg"
+        if svg.exists():
+            try:
+                return rasterize_svg(svg, 600, 1100)
+            except SVGRenderUnavailable:
+                return None
+        return None
+
+    @staticmethod
+    def _crop(layer: Image.Image) -> Image.Image:
+        bbox = layer.getbbox()
+        return layer.crop(bbox) if bbox else layer
 
     def render(self, canvas: Image.Image) -> Image.Image:
-        """Render available layers; missing artwork is intentionally skipped."""
         if canvas.mode != "RGBA":
             canvas = canvas.convert("RGBA")
         for name in self.order:
-            path = self.root / f"{name}.png"
-            if not path.exists():
+            layer = self._load(name)
+            if layer is None:
                 continue
-            layer = Image.open(path).convert("RGBA")
+            layer = self._crop(layer)
             transform = self.transforms.get(name, Transform())
             if transform.scale != 1.0:
                 w = max(1, round(layer.width * transform.scale))
