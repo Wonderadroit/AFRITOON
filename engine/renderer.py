@@ -1,11 +1,11 @@
-"""Pillow frame renderer and FFmpeg encoder."""
+"""Frame composition for the reusable AFRITOON character rig."""
 
 import os
 import shutil
 import subprocess
 import tempfile
 from PIL import Image, ImageDraw, ImageFont
-from .character import Character
+from .character import Tunde
 from .scene import Scene
 from .actions import action_at
 
@@ -19,14 +19,13 @@ def _font(size: int):
     return ImageFont.load_default()
 
 
-def _draw_centered(draw, text, y, font, fill=(25, 25, 25)):
+def _draw_centered(draw, text, y, font):
     box = draw.textbbox((0, 0), text, font=font)
-    text_width = box[2] - box[0]
-    draw.text(((W - text_width) / 2, y), text, font=font, fill=fill)
+    draw.text(((W - (box[2] - box[0])) / 2, y), text, font=font, fill=(25, 25, 25))
 
 
 def render(scene: Scene, output: str) -> str:
-    """Render a Scene to a 9:16 H.264 MP4."""
+    """Render a Scene to a 9:16 H.264 MP4 using the reusable Tunde rig."""
     if shutil.which("ffmpeg") is None:
         raise RuntimeError("FFmpeg was not found. Install it with: pkg install ffmpeg")
     os.makedirs(os.path.dirname(output) or ".", exist_ok=True)
@@ -39,10 +38,15 @@ def render(scene: Scene, output: str) -> str:
             draw.rectangle((0, 1180, W, H), fill=(205, 194, 170))
             _draw_centered(draw, scene.title, 55, _font(52))
             current = action_at(scene.timeline, t)
-            action = current.name if current else "idle"
+            action = current.name
             expression = "shocked" if action in {"shock", "shocked"} else "happy" if action in {"laugh", "dance", "vibe"} else "neutral"
-            character = Character(name=str(scene.character.get("name", "Tunde")), x=float(scene.character.get("x", 540)), y=float(scene.character.get("y", 1120)), scale=float(scene.character.get("scale", 1)), action=action, expression=expression)
-            character.draw(draw, t)
+            Tunde(
+                x=float(scene.character.get("x", 540)),
+                y=float(scene.character.get("y", 1150)),
+                scale=float(scene.character.get("scale", 1.4)),
+                pose=action,
+                expression=expression,
+            ).draw(draw)
             draw.text((60, H - 150), action.upper(), font=_font(42), fill=(25, 25, 25))
             img.save(os.path.join(tmp, f"{i:06d}.png"))
         command = ["ffmpeg", "-y", "-framerate", str(FPS), "-i", os.path.join(tmp, "%06d.png"), "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", output]
