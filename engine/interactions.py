@@ -1,0 +1,58 @@
+"""Small, data-first interaction primitives for AFRITOON's recurring cast."""
+
+from dataclasses import dataclass
+from typing import Tuple
+
+
+@dataclass(frozen=True)
+class CharacterCue:
+    time: float
+    character: str
+    pose: str = "idle"
+    expression: str = "neutral"
+
+
+@dataclass(frozen=True)
+class Interaction:
+    name: str
+    cues: Tuple[CharacterCue, ...]
+
+
+INTERACTIONS = {
+    "tunde_seyi_deadpan": Interaction(
+        name="tunde_seyi_deadpan",
+        cues=(
+            CharacterCue(0.0, "tunde", "talk", "happy"),
+            CharacterCue(1.5, "seyi", "idle", "deadpan"),
+            CharacterCue(2.4, "tunde", "look_at_camera", "surprised"),
+            CharacterCue(3.0, "seyi", "look_at_camera", "deadpan"),
+        ),
+    ),
+    "tunde_mama_exposed": Interaction(
+        name="tunde_mama_exposed",
+        cues=(
+            CharacterCue(0.0, "tunde", "talk", "confident" if False else "happy"),
+            CharacterCue(2.0, "mama", "stand", "neutral"),
+            CharacterCue(2.6, "tunde", "freeze", "shocked"),
+            CharacterCue(3.4, "mama", "look_at_camera", "deadpan"),
+        ),
+    ),
+    "trio_problem": Interaction(
+        name="trio_problem",
+        cues=(
+            CharacterCue(0.0, "tunde", "talk", "happy"),
+            CharacterCue(1.5, "seyi", "look_at_camera", "deadpan"),
+            CharacterCue(2.5, "mama", "stand", "neutral"),
+            CharacterCue(3.0, "tunde", "freeze", "shocked"),
+            CharacterCue(3.8, "seyi", "look_at_camera", "deadpan"),
+            CharacterCue(4.5, "mama", "look_at_camera", "deadpan"),
+        ),
+    ),
+}
+
+
+def interaction(name: str) -> Interaction:
+    try:
+        return INTERACTIONS[name]
+    except KeyError as exc:
+        raise ValueError(f"Unknown AFRITOON interaction: {name}") from exc
