@@ -1,0 +1,45 @@
+characters:
+  tunde:
+    name: Tunde
+    role: protagonist
+    age_band: young_adult
+    personality: [confident, mischievous, optimistic, often_wrong]
+    visual:
+      skin: medium_dark_brown
+      hair: short_low_fade
+      wardrobe: graphic_tshirt_jeans_sneakers
+      silhouette: slightly_oversized_head_confident_chest_out
+      head_ratio: 1.15
+      signature: [expressive_eyebrows, forced_smile, empty_pocket_check, camera_look]
+    default: {pose: idle, expression: neutral}
+    views: [front, three_quarter, side]
+
+  seyi:
+    name: Seyi
+    role: best_friend
+    age_band: young_adult
+    personality: [observant, deadpan, smart, patient, quietly_sarcastic]
+    visual:
+      skin: dark_brown
+      hair: neat_short_cut
+      wardrobe: casual_shirt_jeans_sneakers
+      silhouette: slightly_taller_lean_observant
+      head_ratio: 1.05
+      signature: [deadpan_stare, side_eye, slow_head_turn, knowing_smile]
+    default: {pose: idle, expression: deadpan}
+    views: [front, three_quarter, side]
+
+  mama:
+    name: Mama
+    role: mother
+    age_band: older_adult
+    personality: [perceptive, commanding, warm, funny, unshakable]
+    visual:
+      skin: medium_dark_brown
+      hair: headwrap
+      wardrobe: blouse_wrapper_house_shoes
+      silhouette: strong_maternal_fuller_shape
+      head_ratio: 1.08
+      signature: [silent_stare, hands_on_hips, knowing_look, instant_interrogation]
+    default: {pose: idle, expression: neutral}
+    views: [front, three_quarter, side]
