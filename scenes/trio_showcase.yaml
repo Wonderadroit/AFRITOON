@@ -1,0 +1,24 @@
+scene:
+  title: "Trio Showcase"
+  duration: 6.0
+  interaction: trio_problem
+  format: vertical_9_16
+  characters:
+    - id: tunde
+      position: [300, 1320]
+      scale: 1.0
+    - id: seyi
+      position: [540, 1320]
+      scale: 0.95
+    - id: mama
+      position: [790, 1320]
+      scale: 1.05
+  beats:
+    - at: 0.0
+      emotion: funny
+    - at: 2.5
+      emotion: surprised
+    - at: 3.8
+      emotion: deadpan
+    - at: 4.5
+      emotion: funny
