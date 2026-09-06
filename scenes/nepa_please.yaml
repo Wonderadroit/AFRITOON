@@ -19,7 +19,7 @@ scene:
     - at: 7.0
       emotion: shocked
     - at: 14.0
-      emotion: anxious
+      emotion: surprised
     - at: 20.0
       emotion: deadpan
   dialogue:
