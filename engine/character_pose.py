@@ -15,17 +15,19 @@ class CharacterPose:
 
 
 BASE = {
-    "head": Transform(540, 900),
-    "neck": Transform(540, 1040),
-    "torso": Transform(540, 1190),
-    "left_arm": Transform(400, 1190),
-    "right_arm": Transform(680, 1190),
-    "legs": Transform(540, 1450),
+    "head": Transform(540, 900), "neck": Transform(540, 1040),
+    "torso": Transform(540, 1190), "left_arm": Transform(400, 1190),
+    "right_arm": Transform(680, 1190), "legs": Transform(540, 1450),
     "shoes": Transform(540, 1630),
 }
 
 COMMON = {
-    "idle": {},
+    "idle": {}, "stand": {},
+    "talk": {"torso": Transform(540, 1185)},
+    "look": {"head": Transform(550, 900, 3)},
+    "turn": {"head": Transform(555, 900, 8), "torso": Transform(545, 1190, 3)},
+    "look_at_camera": {"head": Transform(540, 900)},
+    "laugh": {"head": Transform(540, 895, -3)},
     "vibe": {"left_arm": Transform(385, 1135, -18), "right_arm": Transform(695, 1135, 18)},
     "dance": {"left_arm": Transform(375, 1100, -35), "right_arm": Transform(705, 1085, 35), "torso": Transform(540, 1170, -3)},
     "check_pocket": {"left_arm": Transform(475, 1280, 42), "right_arm": Transform(610, 1280, -25)},
