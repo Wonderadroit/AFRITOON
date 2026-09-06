@@ -19,13 +19,14 @@ def _font(size: int):
     return ImageFont.load_default()
 
 
-def _draw_centered(draw, text, y, font, fill=(25,25,25)):
+def _draw_centered(draw, text, y, font, fill=(25, 25, 25)):
     box = draw.textbbox((0, 0), text, font=font)
     x = (W - (box[2] - box[0])) / 2
     draw.text((x, y), text, font=font, fill=fill)
 
 
 def render(scene: Scene, output: str) -> str:
+    """Render a Scene to a 9:16 H.264 MP4."""
     os.makedirs(os.path.dirname(output) or ".", exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="afritoon-") as tmp:
         for i in range(int(scene.duration * FPS)):
@@ -37,9 +38,11 @@ def render(scene: Scene, output: str) -> str:
             a = action_at(scene.timeline, t)
             action = a.name if a else "idle"
             expression = "neutral"
-            if action in {"shock", "shocked"}: expression = "shocked"
-            elif action in {"laugh", "dance", "vibe"}: expression = "happy"
-            c = Character(
+            if action in {"shock", "shocked"}:
+                expression = "shocked"
+            elif action in {"laugh", "dance", "vibe"}:
+                expression = "happy"
+            character = Character(
                 name=str(scene.character.get("name", "Tunde")),
                 x=float(scene.character.get("x", 540)),
                 y=float(scene.character.get("y", 1120)),
@@ -47,11 +50,18 @@ def render(scene: Scene, output: str) -> str:
                 action=action,
                 expression=expression,
             )
-            c.draw(draw, t)
-            draw.text((60, H-150), action.upper(), font=_font(42), fill=(25,25,25))
+            character.draw(draw, t)
+            draw.text((60, H - 150), action.upper(), font=_font(42), fill=(25, 25, 25))
             img.save(os.path.join(tmp, f"{i:06d}.png"))
-        subprocess.run([
-            "ffmpeg", "-y", "-framerate", str(FPS), "-i", os.path.join(tmp, "%06d.png"),
-            "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", output
-        ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-framerate", str(FPS),
+                "-i", os.path.join(tmp, "%06d.png"),
+                "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                "-movflags", "+faststart", output,
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
     return output
