@@ -10,8 +10,7 @@ def test_story_beat_maps_to_character_action_and_expression():
         10,
         [StoryBeat(3, "power goes off", "tunde", "shocked", "panic")],
     )
-    cues = cues_for(plan, "tunde")
-    cue = cue_at(cues, 3)
+    cue = cue_at(cues_for(plan, "tunde"), 3)
     assert cue is not None
     assert cue.action == "shock"
     assert cue.expression == "shocked"
@@ -29,8 +28,6 @@ def test_story_cue_is_valid_for_character_contract():
 
 
 def test_cast_scene_uses_story_when_no_interaction_exists():
-    scene = CastScene.from_yaml.__func__ if False else None
-    # Build directly so this test isolates the bridge from YAML parsing.
     plan = build_story_plan(
         "Story only",
         5,
