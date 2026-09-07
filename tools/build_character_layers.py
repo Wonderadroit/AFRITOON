@@ -1,6 +1,6 @@
 """Build deterministic semantic SVG/PNG layers from character masters.
 
-The character masters are the source of truth.  Layer extraction therefore
+The character masters are the source of truth. Layer extraction therefore
 uses each master's ``data-layer`` names instead of brittle child indexes.
 """
 
@@ -15,25 +15,12 @@ ROOT = Path(__file__).resolve().parents[1]
 NS = "http://www.w3.org/2000/svg"
 ET.register_namespace("", NS)
 
-# This is the runtime contract. A master may intentionally omit a layer (for
+# Fixed runtime contract. A master may intentionally omit a layer (for
 # example back_hair when the hairstyle is fully represented by front_hair).
 LAYERS = (
-    "back_hair",
-    "legs",
-    "shoes",
-    "torso",
-    "left_arm",
-    "right_arm",
-    "neck",
-    "head",
-    "ears",
-    "front_hair",
-    "left_eye",
-    "right_eye",
-    "left_brow",
-    "right_brow",
-    "nose",
-    "mouth",
+    "back_hair", "legs", "shoes", "torso", "left_arm", "right_arm", "neck",
+    "head", "ears", "front_hair", "left_eye", "right_eye", "left_brow",
+    "right_brow", "nose", "mouth",
 )
 CHARACTERS = ("tunde", "seyi", "mama")
 
@@ -49,13 +36,9 @@ def children(master: Path):
 def semantic_nodes(nodes: list[ET.Element], cid: str) -> dict[str, list[ET.Element]]:
     """Return master drawing groups keyed by their semantic data-layer name."""
     found: dict[str, list[ET.Element]] = {}
-    unknown: list[str] = []
-
     for node in nodes:
         layer = node.attrib.get("data-layer")
         if not layer:
-            # The master may contain an unlabelled structural group, but all
-            # artwork groups in the current masters are semantic layers.
             continue
         if layer in found:
             raise ValueError(f"{cid} master defines duplicate data-layer '{layer}'")
@@ -64,18 +47,11 @@ def semantic_nodes(nodes: list[ET.Element], cid: str) -> dict[str, list[ET.Eleme
     unknown = sorted(set(found) - set(LAYERS))
     if unknown:
         raise ValueError(f"{cid} master defines unknown data-layer(s): {', '.join(unknown)}")
-
     return found
 
 
 def write_layer(root: ET.Element, nodes: list[ET.Element], target: Path):
-    out = ET.Element(
-        f"{{{NS}}}svg",
-        {
-            "viewBox": root.attrib.get("viewBox", "0 0 600 1100"),
-            "xmlns": NS,
-        },
-    )
+    out = ET.Element(f"{{{NS}}}svg", {"viewBox": root.attrib.get("viewBox", "0 0 600 1100")})
     group = ET.SubElement(out, f"{{{NS}}}g")
     for node in nodes:
         group.append(copy.deepcopy(node))
@@ -102,9 +78,8 @@ def build(cid: str, png: bool = False) -> None:
 
     output_root = ROOT / "assets" / "characters" / cid / "layers" / "front"
     for layer in LAYERS:
-        # Empty semantic layers are valid: they preserve the fixed runtime
-        # contract without forcing artwork to invent geometry that is not
-        # present in the canonical master.
+        # Empty semantic layers are valid and preserve the fixed runtime
+        # contract without inventing geometry absent from the master.
         svg_path = output_root / f"{layer}.svg"
         write_layer(root, semantic.get(layer, []), svg_path)
         if png:
