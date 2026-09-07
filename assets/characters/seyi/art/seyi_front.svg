@@ -13,11 +13,11 @@
 <g data-layer="neck"><path fill="url(#skin)" d="M270 462 L270 526 Q300 548 330 526 L330 462Z"/></g>
 <g data-layer="ears"><path fill="url(#skin)" d="M164 326 Q152 282 180 278 Q202 282 204 327 Q201 367 180 377 Q158 370 164 326Z"/><path fill="url(#skin)" d="M436 326 Q448 282 420 278 Q398 282 396 327 Q399 367 420 377 Q442 370 436 326Z"/><path fill="none" stroke="#4d291c" stroke-width="4" d="M176 321 Q166 335 180 347 M424 321 Q434 335 420 347"/></g>
 <g data-layer="head"><path fill="url(#skin)" d="M168 318 Q170 188 300 156 Q430 188 432 318 Q429 432 350 478 Q300 504 250 478 Q171 432 168 318Z"/><path fill="none" stroke="#995c3b" stroke-width="4" d="M199 401 Q215 429 238 443 M401 401 Q385 429 362 443"/></g>
-<g data-layer="front_hair"><path fill="#171717" d="M160 292 Q158 175 222 122 Q300 72 378 122 Q442 175 440 292 L414 255 Q386 214 344 195 Q300 178 256 195 Q214 214 186 255Z"/><path fill="#242424" d="M196 168 Q230 113 285 105 L266 156 Q230 157 196 168Z"/><path fill="#242424" d="M404 168 Q370 113 315 105 L334 156 Q370 157 404 168Z"/></g>
+<g data-layer="front_hair"><path fill="#171717" d="M176 285 Q176 185 232 142 Q300 94 368 142 Q424 185 424 285 L397 250 Q365 222 330 210 Q300 201 270 210 Q235 222 203 250Z"/><path fill="#242424" d="M208 165 Q238 112 300 100 Q362 112 392 165 Q365 151 330 148 Q300 143 270 148 Q235 151 208 165Z"/></g>
 <g data-layer="left_eye"><path fill="#fff" d="M211 328 Q245 303 277 327 Q272 359 242 362 Q215 358 211 328Z"/><ellipse fill="#171717" stroke="none" cx="254" cy="334" rx="10" ry="13"/><circle fill="#fff" stroke="none" cx="257" cy="330" r="3"/></g>
 <g data-layer="right_eye"><path fill="#fff" d="M389 328 Q355 303 323 327 Q328 359 358 362 Q385 358 389 328Z"/><ellipse fill="#171717" stroke="none" cx="346" cy="334" rx="10" ry="13"/><circle fill="#fff" stroke="none" cx="343" cy="330" r="3"/></g>
 <g data-layer="left_brow"><path fill="none" stroke-width="9" d="M211 279 Q244 290 276 281"/></g>
 <g data-layer="right_brow"><path fill="none" stroke-width="9" d="M389 279 Q356 290 324 281"/></g>
-<g data-layer="nose"><path fill="none" stroke="#4d291c" stroke-width="6" d="M300 337 L286 396 Q300 404 317 396"/></g>
+<g data-layer="nose"><path fill="none" stroke="#4d291c" stroke-width="6" d="M300 337 L286 396 Q300 404 317 396"/><path fill="none" stroke="#171717" stroke-width="5" d="M203 326 Q245 292 281 322 Q277 365 239 370 Q210 363 203 326 M397 326 Q355 292 319 322 Q323 365 361 370 Q390 363 397 326 M281 335 Q300 325 319 335"/></g>
 <g data-layer="mouth"><path fill="none" stroke="#4d291c" stroke-width="6" d="M267 432 Q300 442 333 432"/><path fill="none" stroke="#4d291c" stroke-width="4" d="M278 447 Q300 452 322 447"/></g>
 </g></svg>
