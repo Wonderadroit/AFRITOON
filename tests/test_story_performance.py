@@ -51,3 +51,30 @@ def test_explicit_interaction_still_overrides_story_performance():
     state = scene.state_at(7)
     assert state.characters["tunde"].pose == "shock"
     assert state.characters["tunde"].expression == "shocked"
+
+
+def test_tunde_shock_generates_seyi_and_mama_reactions():
+    plan = build_story_plan(
+        "Reaction test",
+        10,
+        [StoryBeat(3, "power goes off", "tunde", "shocked", "panic")],
+    )
+    seyi = cue_at(cues_for(plan, "seyi"), 3.35)
+    mama = cue_at(cues_for(plan, "mama"), 3.65)
+    assert seyi is not None
+    assert seyi.action == "look"
+    assert seyi.expression == "deadpan"
+    assert mama is not None
+    assert mama.action == "turn"
+    assert mama.expression == "curious"
+
+
+def test_reactions_do_not_recursively_trigger_more_reactions():
+    plan = build_story_plan(
+        "Reaction test",
+        10,
+        [StoryBeat(3, "power goes off", "tunde", "shocked", "panic")],
+    )
+    seyi_cues = cues_for(plan, "seyi")
+    assert len(seyi_cues) == 1
+    assert seyi_cues[0].at == 3.35
