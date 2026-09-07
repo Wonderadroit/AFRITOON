@@ -1,4 +1,4 @@
-"""Shared character definitions for AFRITOON's reusable cast."""
+"""Canonical ITANRA character definitions and visual invariants."""
 
 from dataclasses import dataclass, field
 from typing import Dict, Tuple
@@ -20,12 +20,16 @@ DEFAULT_VIEWS = ("front", "three_quarter", "side")
 
 @dataclass(frozen=True)
 class CharacterVisual:
+    """Stable visual identity; these values describe the design, not rendering."""
+
     skin: str
     hair: str
     wardrobe: str
     silhouette: str
     head_ratio: float = 1.0
     signature: Tuple[str, ...] = ()
+    design_notes: Tuple[str, ...] = ()
+    palette: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -53,6 +57,13 @@ CHARACTERS: Dict[str, CharacterDefinition] = {
             silhouette="slightly_oversized_head_confident_chest_out",
             head_ratio=1.15,
             signature=("expressive_eyebrows", "forced_smile", "empty_pocket_check", "camera_look"),
+            design_notes=(
+                "human-looking stylized 2D proportions",
+                "slightly broad shoulders with relaxed young-adult build",
+                "clear cheek and jaw contour",
+                "eyes and brows must remain readable at phone size",
+            ),
+            palette=("skin-medium-dark", "hair-black", "shirt-warm-gold", "denim-deep-blue", "shoe-off-white"),
         ),
     ),
     "seyi": CharacterDefinition(
@@ -64,6 +75,12 @@ CHARACTERS: Dict[str, CharacterDefinition] = {
             silhouette="slightly_taller_lean_observant",
             head_ratio=1.05,
             signature=("deadpan_stare", "side_eye", "slow_head_turn", "knowing_smile"),
+            design_notes=(
+                "slightly taller and leaner than Tunde",
+                "restrained facial movement with highly readable eyes",
+                "clean simple haircut and understated wardrobe",
+            ),
+            palette=("skin-dark-brown", "hair-black", "shirt-muted-teal", "denim-deep-blue", "shoe-off-white"),
         ),
         default_expression="deadpan",
     ),
@@ -76,6 +93,13 @@ CHARACTERS: Dict[str, CharacterDefinition] = {
             silhouette="strong_maternal_fuller_shape",
             head_ratio=1.08,
             signature=("silent_stare", "hands_on_hips", "knowing_look", "instant_interrogation"),
+            design_notes=(
+                "strong maternal silhouette without caricature",
+                "headwrap is a stable recognition cue",
+                "hands and eyes must support silent-comedy acting",
+                "warm authority; never designed as an ugly or degrading stereotype",
+            ),
+            palette=("skin-medium-dark", "headwrap-plum", "blouse-soft-rose", "wrapper-earth-brown", "shoe-cream"),
         ),
     ),
 }
@@ -87,7 +111,7 @@ def character(name: str) -> CharacterDefinition:
     try:
         return CHARACTERS[key]
     except KeyError as exc:
-        raise ValueError(f"Unknown AFRITOON character: {name}") from exc
+        raise ValueError(f"Unknown ITANRA character: {name}") from exc
 
 
 def all_characters() -> Tuple[CharacterDefinition, ...]:
