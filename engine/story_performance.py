@@ -36,6 +36,29 @@ class StoryPerformanceCue:
     expression: str
 
 
+# Source action -> contextual reactions. These are deliberately sparse: the
+# engine should react to meaningful beats, not make every character twitch.
+# Reactions are derived only from authored story beats, so generated reactions
+# never recursively trigger more reactions.
+REACTION_RULES = {
+    ("tunde", "shock"): (
+        ("seyi", 0.35, "look", "deadpan"),
+        ("mama", 0.65, "turn", "curious"),
+    ),
+    ("tunde", "freeze"): (
+        ("seyi", 0.40, "look_at_camera", "deadpan"),
+        ("mama", 0.80, "look_at_camera", "deadpan"),
+    ),
+    ("tunde", "check_pocket"): (
+        ("seyi", 0.45, "look", "deadpan"),
+    ),
+    ("mama", "angry"): (
+        ("tunde", 0.35, "freeze", "shocked"),
+        ("seyi", 0.60, "look_at_camera", "deadpan"),
+    ),
+}
+
+
 def _action_for(beat: StoryBeat) -> str:
     text = f"{beat.event} {beat.intent or ''}".lower()
     if any(word in text for word in ("panic", "power goes off", "shock", "shocked")):
@@ -59,12 +82,45 @@ def _expression_for(beat: StoryBeat) -> str:
     return EMOTION_TO_EXPRESSION.get(beat.emotion.strip().lower(), "neutral")
 
 
+def _reaction_cues_for(
+    plan: StoryPlan,
+    character_id: str,
+) -> list[StoryPerformanceCue]:
+    """Derive sparse contextual reactions from character-specific story beats."""
+    result: list[StoryPerformanceCue] = []
+    target_definition = character(character_id)
+    for beat in plan.beats:
+        if beat.character is None:
+            continue
+        source = beat.character.strip().lower()
+        if source == target_definition.id:
+            continue
+        source_action = _action_for(beat)
+        for target, delay, action, expression in REACTION_RULES.get((source, source_action), ()):
+            if target != target_definition.id:
+                continue
+            if action not in target_definition.actions:
+                continue
+            if expression not in target_definition.expressions:
+                continue
+            result.append(
+                StoryPerformanceCue(
+                    at=float(beat.at) + float(delay),
+                    character=target_definition.id,
+                    action=action,
+                    expression=expression,
+                )
+            )
+    return result
+
+
 def cues_for(plan: StoryPlan, character_id: str) -> tuple[StoryPerformanceCue, ...]:
-    """Return validated performance cues for one character.
+    """Return deterministic story and contextual reaction cues for one character.
 
     Character-specific beats target only that character. A beat without a
     character applies to every character in the scene and is useful for broad
-    emotional transitions.
+    emotional transitions. Contextual reactions are derived from salient
+    character-specific beats and never recursively trigger further reactions.
     """
     definition = character(character_id)
     result: list[StoryPerformanceCue] = []
@@ -78,6 +134,9 @@ def cues_for(plan: StoryPlan, character_id: str) -> tuple[StoryPerformanceCue, .
         if expression not in definition.expressions:
             expression = definition.default_expression
         result.append(StoryPerformanceCue(beat.at, definition.id, action, expression))
+
+    result.extend(_reaction_cues_for(plan, definition.id))
+    result.sort(key=lambda cue: cue.at)
     return tuple(result)
 
 
