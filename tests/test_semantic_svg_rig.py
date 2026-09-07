@@ -5,7 +5,6 @@ import pytest
 from engine.character_pose import pose_for
 from engine.semantic_svg_rig import render_semantic_character
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -52,3 +51,21 @@ def test_semantic_renderer_supports_all_canonical_characters():
         image = render_semantic_character(path, character, "idle")
         assert image.size == (600, 1100)
         assert image.getbbox() is not None
+
+
+def test_expression_changes_pixels_without_replacing_master_artwork():
+    pytest.importorskip("cairosvg")
+    path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
+    master_before = path.read_text(encoding="utf-8")
+    neutral = render_semantic_character(path, "tunde", "idle", expression_name="neutral")
+    shocked = render_semantic_character(path, "tunde", "idle", expression_name="shocked")
+    assert neutral.tobytes() != shocked.tobytes()
+    assert path.read_text(encoding="utf-8") == master_before
+
+
+def test_mouth_timing_can_override_expression_mouth():
+    pytest.importorskip("cairosvg")
+    path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
+    closed = render_semantic_character(path, "tunde", "idle", expression_name="neutral", mouth_name="closed")
+    open_mouth = render_semantic_character(path, "tunde", "idle", expression_name="neutral", mouth_name="open")
+    assert closed.tobytes() != open_mouth.tobytes()
