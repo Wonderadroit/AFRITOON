@@ -32,7 +32,14 @@ def _layer_svgs(master: Path) -> dict[str, str]:
             "xmlns": "http://www.w3.org/2000/svg",
             "viewBox": f"0 0 {SOURCE_W} {SOURCE_H}",
         })
-        wrapper.append(ET.fromstring(ET.tostring(node, encoding="unicode")))
+        # The original masters place these presentation attributes on a
+        # parent group. Preserve them when a semantic layer is extracted.
+        wrapper_group = ET.fromstring(ET.tostring(node, encoding="unicode"))
+        wrapper_group.set("stroke", "#171717")
+        wrapper_group.set("stroke-width", "12")
+        wrapper_group.set("stroke-linejoin", "round")
+        wrapper_group.set("stroke-linecap", "round")
+        wrapper.append(wrapper_group)
         groups[layer] = ET.tostring(wrapper, encoding="unicode")
     return groups
 
