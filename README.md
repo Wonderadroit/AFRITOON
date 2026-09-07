@@ -16,12 +16,16 @@ The first recurring cast is:
 
 The goal is not photorealism. The target is recognizable, expressive, human-looking stylized 2D characters whose identity survives across episodes.
 
+The canonical visual and acting rules live in [`docs/CHARACTER_BIBLE.md`](docs/CHARACTER_BIBLE.md).
+
 ## Production chain
 
 ```text
 IDEA / TREND / STORY
         ↓
 STORY + EMOTIONAL BEATS
+        ↓
+CHARACTER INTENT
         ↓
 CHARACTER STATE
         ↓
@@ -39,6 +43,8 @@ FFMPEG
         ↓
 MP4 SHORT
 ```
+
+Story beats can now be translated into deterministic actions and expressions. Explicit hand-authored interaction cues remain higher priority, so the new story layer improves scenes without silently changing existing choreography.
 
 The canonical front masters are original human-looking SVG artwork. Each character is resolved independently; Seyi and Mama are never substituted with Tunde. The view policy falls back to the front master when a genuine three-quarter or side master has not yet been authored.
 
@@ -86,6 +92,8 @@ STORY DIRECTOR
         ↓
 EMOTIONAL + CHARACTER STATE
         ↓
+PERFORMANCE DIRECTOR
+        ↓
 SCENE DIRECTOR
         ↓
 ANIMATION ENGINE
@@ -95,7 +103,7 @@ VOICE / AUDIO TIMELINE
 9:16 MP4
 ```
 
-Current foundations include 1080×1920 output, YAML scenes, timeline actions, character definitions, emotions, expressions, independent mouth states, recurring interactions, multi-character cast state, layered-rig primitives, SVG master rendering and FFmpeg encoding.
+Current foundations include 1080×1920 output, YAML scenes, timeline actions, character definitions, canonical visual identity, emotions, expressions, independent mouth states, recurring interactions, story-to-performance cues, multi-character cast state, layered-rig primitives, SVG master rendering and FFmpeg encoding.
 
 ## Development rule
 
