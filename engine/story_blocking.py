@@ -16,6 +16,11 @@ class StoryBlockingCue:
     target: str | None = None
     interaction_distance: float = 70.0
 
+    @property
+    def to(self) -> tuple[float, float]:
+        """SpatialCue-compatible destination for the shared resolver."""
+        return (self.x, self.y)
+
 
 def _target_id(text: str, available: set[str]) -> str | None:
     lowered = text.lower()
@@ -41,7 +46,7 @@ def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tupl
         target = _target_id(text, available - {actor})
         if target is None:
             continue
-        tx, ty = positions[target]
+        tx, _ = positions[target]
         ax, ay = positions[actor]
         stop_x = conversational_stop_x(ax, tx, distance=70.0)
         result.append(StoryBlockingCue(float(beat.at), actor, stop_x, float(ay), 1.0, target, 70.0))
