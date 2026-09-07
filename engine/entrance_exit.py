@@ -44,7 +44,13 @@ def resolve_entry_exit(
     base: Mapping[str, tuple[float, float]],
     cues: tuple[EntryExitCue, ...] = (),
 ) -> tuple[tuple[float, float], bool]:
-    """Resolve position and visibility after all entry/exit cues."""
+    """Resolve position and visibility after all entry/exit cues.
+
+    A future entrance does not mutate the low-level resolver's authored state;
+    callers that explicitly stage a hidden character can keep that visibility.
+    This preserves the resolver's simple temporal contract while CastScene
+    applies scene-level entrance visibility semantics.
+    """
     cid = str(character).strip().lower()
     authored = tuple(map(float, base.get(cid, (540.0, 1150.0))))
     current = authored
@@ -54,21 +60,12 @@ def resolve_entry_exit(
         key=lambda cue: cue.at,
     )
 
-    # An explicit future entrance defines the character's pre-entrance state.
-    for cue in character_cues:
-        if cue.at > now:
-            if cue.action == "enter":
-                if cue.position is not None:
-                    current = tuple(map(float, cue.position))
-                visible = False
-            break
-
     for cue in character_cues:
         if cue.at > now:
             break
         target = tuple(map(float, cue.position)) if cue.position is not None else authored
         if cue.action == "enter":
-            start = current if not visible else (tuple(map(float, cue.position)) if cue.position is not None else current)
+            start = current
             if cue.duration <= 0 or now >= cue.at + cue.duration:
                 current = authored
                 visible = True
