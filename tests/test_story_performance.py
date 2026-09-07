@@ -77,3 +77,13 @@ def test_contextual_reaction_expires_after_its_acting_window():
     assert reaction.duration == 1.16
     assert cue_at(cues, 3.35) == reaction
     assert cue_at(cues, 4.50) is None
+
+
+def test_contextual_reaction_focuses_on_source_character():
+    plan = build_story_plan(
+        "Reaction test", 10, [StoryBeat(3, "power goes off", "tunde", "shocked", "panic")]
+    )
+    seyi = cue_at(cues_for(plan, "seyi"), 3.35)
+    mama = cue_at(cues_for(plan, "mama"), 3.65)
+    assert seyi is not None and seyi.focus == "tunde"
+    assert mama is not None and mama.focus == "tunde"
