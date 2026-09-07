@@ -1,8 +1,8 @@
-"""Deterministic timing for character actions and reactions.
+"""Deterministic timing and motion curves for character acting.
 
-Temporal acting is deliberately renderer-independent. A performance can be
-reasoned about as anticipation -> action -> hold -> recovery before any
-animation backend decides how those phases look.
+Temporal acting is renderer-independent. A performance can be reasoned about
+as anticipation -> action -> hold -> recovery before any animation backend
+decides how those phases look.
 """
 
 from __future__ import annotations
@@ -35,17 +35,9 @@ class ActingTiming:
 
     @property
     def total(self) -> float:
-        return (
-            self.anticipation
-            + self.action
-            + self.hold
-            + self.recovery
-        )
+        return self.anticipation + self.action + self.hold + self.recovery
 
 
-# Character-specific timing is part of acting grammar, not rendering.
-# The values intentionally stay simple and deterministic so scenes remain
-# reproducible while still giving each character a distinct rhythm.
 CHARACTER_TIMING: dict[str, dict[str, ActingTiming]] = {
     "tunde": {
         "shock": ActingTiming(0.16, 0.10, 0.34, 0.22),
@@ -69,22 +61,60 @@ CHARACTER_TIMING: dict[str, dict[str, ActingTiming]] = {
 
 DEFAULT_TIMING = ActingTiming(0.10, 0.20, 0.30, 0.15)
 
+# Motion characterizes rhythm, not identity: Tunde snaps, Seyi glides,
+# Mama moves deliberately. Values are bounded so renders stay deterministic.
+MOTION_CURVES: dict[str, str] = {
+    "tunde": "snap",
+    "seyi": "smooth",
+    "mama": "deliberate",
+}
+
 
 def timing_for(character: str, action: str) -> ActingTiming:
     """Return the deterministic timing profile for a character/action."""
     return CHARACTER_TIMING.get(character, {}).get(action, DEFAULT_TIMING)
 
 
-def acting_phase(character: str, action: str, elapsed: float) -> str:
-    """Return the acting phase at ``elapsed`` seconds into an action.
+def smoothstep(value: float) -> float:
+    """Cubic ease-in/ease-out, clamped to [0, 1]."""
+    t = max(0.0, min(1.0, float(value)))
+    return t * t * (3.0 - 2.0 * t)
 
-    Time before zero is treated as anticipation. Time after the configured
-    duration remains in recovery, making a completed beat visually settle
-    instead of jumping back to an unrelated state.
-    """
+
+def ease_in(value: float) -> float:
+    """Accelerate from rest."""
+    t = max(0.0, min(1.0, float(value)))
+    return t * t
+
+
+def ease_out(value: float) -> float:
+    """Decelerate into the destination."""
+    t = max(0.0, min(1.0, float(value)))
+    return 1.0 - (1.0 - t) ** 2
+
+
+def motion_curve(character: str, phase: str, progress: float) -> float:
+    """Shape normalized phase progress according to character rhythm."""
+    t = max(0.0, min(1.0, float(progress)))
+    style = MOTION_CURVES.get(str(character).strip().lower(), "smooth")
+    if phase == "action":
+        if style == "snap":
+            # Fast acceleration followed by a short settle into the hold.
+            return ease_out(t)
+        if style == "deliberate":
+            return smoothstep(t)
+        return smoothstep(t)
+    if phase == "anticipation":
+        return ease_in(t) if style == "snap" else smoothstep(t)
+    if phase == "recovery":
+        return ease_out(t)
+    return 1.0
+
+
+def acting_phase(character: str, action: str, elapsed: float) -> str:
+    """Return the acting phase at ``elapsed`` seconds into an action."""
     timing = timing_for(character, action)
     t = max(0.0, float(elapsed))
-
     if t < timing.anticipation:
         return "anticipation"
     t -= timing.anticipation
@@ -94,3 +124,37 @@ def acting_phase(character: str, action: str, elapsed: float) -> str:
     if t < timing.hold:
         return "hold"
     return "recovery"
+
+
+def acting_motion(character: str, action: str, elapsed: float) -> tuple[str, float, float]:
+    """Return ``(phase, phase_progress, pose_amount)`` for a timed action.
+
+    ``pose_amount`` is the continuous blend from canonical idle (0) to the
+    authored action (1). It creates actual travel through the pose rather than
+    swapping between static phase snapshots.
+    """
+    timing = timing_for(character, action)
+    t = max(0.0, float(elapsed))
+
+    if t < timing.anticipation and timing.anticipation > 0:
+        phase = "anticipation"
+        progress = t / timing.anticipation
+        # A small pre-hit movement; the renderer still uses authored layers.
+        amount = 0.15 * motion_curve(character, phase, progress)
+        return phase, progress, amount
+
+    t -= timing.anticipation
+    if t < timing.action and timing.action > 0:
+        phase = "action"
+        progress = t / timing.action
+        amount = 0.15 + 0.85 * motion_curve(character, phase, progress)
+        return phase, progress, amount
+
+    t -= timing.action
+    if t < timing.hold or timing.recovery == 0:
+        return "hold", 1.0, 1.0
+
+    t -= timing.hold
+    progress = min(1.0, t / timing.recovery)
+    amount = 1.0 - motion_curve(character, "recovery", progress)
+    return "recovery", progress, amount
