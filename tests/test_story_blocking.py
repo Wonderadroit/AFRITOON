@@ -3,7 +3,7 @@ from engine.story_director import StoryBeat, StoryPlan
 
 
 def test_story_intent_creates_approach_cue():
-    plan = StoryPlan(5.0, (StoryBeat(1.0, "Seyi comes over to Tunde", "seyi", "calm", "approach Tunde"),))
+    plan = StoryPlan("Untitled", 5.0, (StoryBeat(1.0, "Seyi comes over to Tunde", "seyi", "calm", "approach Tunde"),))
     cues = cues_for(plan, {"seyi": (800, 1450), "tunde": (300, 1450)})
     assert len(cues) == 1
     assert cues[0].character == "seyi"
@@ -12,7 +12,7 @@ def test_story_intent_creates_approach_cue():
 
 
 def test_story_blocking_interpolates_deterministically():
-    plan = StoryPlan(5.0, (StoryBeat(1.0, "Seyi comes over to Tunde", "seyi", "calm", "approach Tunde"),))
+    plan = StoryPlan("Untitled", 5.0, (StoryBeat(1.0, "Seyi comes over to Tunde", "seyi", "calm", "approach Tunde"),))
     cue = cues_for(plan, {"seyi": (800, 1450), "tunde": (300, 1450)})[0]
     x0, y0 = position_at((800, 1450), cue, 1.0)
     x1, y1 = position_at((800, 1450), cue, 1.5)
