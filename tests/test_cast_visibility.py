@@ -16,3 +16,15 @@ def test_nepa_characters_enter_at_story_beats():
     assert seyi_entry.characters["seyi"].visible is True
     assert seyi_entry.characters["mama"].visible is False
     assert mama_entry.characters["mama"].visible is True
+
+
+def test_nepa_story_beat_drives_contextual_reactions():
+    scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
+
+    seyi = scene.state_at(7.4).characters["seyi"]
+    mama = scene.state_at(7.7).characters["mama"]
+
+    assert seyi.pose == "look"
+    assert seyi.expression == "deadpan"
+    assert mama.pose == "turn"
+    assert mama.expression == "curious"
