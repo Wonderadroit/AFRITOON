@@ -13,6 +13,7 @@ from .character_pose import pose_for
 from .svg_renderer import SVGRenderUnavailable
 
 SOURCE_W, SOURCE_H = 600, 1100
+SVG_NS = "http://www.w3.org/2000/svg"
 
 
 def _svg_namespace(tag: str) -> str:
@@ -28,12 +29,13 @@ def _layer_svgs(master: Path) -> dict[str, str]:
         layer = node.attrib.get("data-layer")
         if not layer:
             continue
-        wrapper = ET.Element("svg", {
-            "xmlns": "http://www.w3.org/2000/svg",
+        # Build a fresh SVG wrapper and explicitly qualify only the wrapper
+        # namespace. Do not serialize a namespace declaration onto the child
+        # group: ElementTree will otherwise emit a duplicate xmlns attribute,
+        # which strict SVG consumers such as CairoSVG reject.
+        wrapper = ET.Element(f"{{{SVG_NS}}}svg", {
             "viewBox": f"0 0 {SOURCE_W} {SOURCE_H}",
         })
-        # The original masters place these presentation attributes on a
-        # parent group. Preserve them when a semantic layer is extracted.
         wrapper_group = ET.fromstring(ET.tostring(node, encoding="unicode"))
         wrapper_group.set("stroke", "#171717")
         wrapper_group.set("stroke-width", "12")
