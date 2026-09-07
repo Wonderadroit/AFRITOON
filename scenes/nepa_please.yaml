@@ -1,7 +1,7 @@
 scene:
   title: "NEPA, Please!"
   duration: 24.0
-  interaction: trio_problem
+  interaction: nepa_panic
   format: vertical_9_16
   characters:
     - id: tunde
