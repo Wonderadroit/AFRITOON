@@ -28,6 +28,7 @@ class StoryPerformanceCue:
     action: str
     expression: str
     duration: float | None = None
+    focus: str | None = None
 
 
 REACTION_RULES = {
@@ -74,6 +75,7 @@ def _reaction_cues_for(plan: StoryPlan, character_id: str) -> list[StoryPerforma
                 action=action,
                 expression=expression,
                 duration=timing_for(target_definition.id, action).total,
+                focus=source,
             ))
     return result
 
