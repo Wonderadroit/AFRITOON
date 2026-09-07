@@ -29,10 +29,6 @@ def _layer_svgs(master: Path) -> dict[str, str]:
         layer = node.attrib.get("data-layer")
         if not layer:
             continue
-        # Build a fresh SVG wrapper and explicitly qualify only the wrapper
-        # namespace. Do not serialize a namespace declaration onto the child
-        # group: ElementTree will otherwise emit a duplicate xmlns attribute,
-        # which strict SVG consumers such as CairoSVG reject.
         wrapper = ET.Element(f"{{{SVG_NS}}}svg", {
             "viewBox": f"0 0 {SOURCE_W} {SOURCE_H}",
         })
@@ -59,6 +55,44 @@ def _rasterize_svg_text(source: str) -> Image.Image:
     return Image.open(io.BytesIO(png)).convert("RGBA")
 
 
+def _transform_layer(layer: Image.Image, x: float, y: float, rotation: float, scale: float) -> tuple[Image.Image, tuple[int, int]]:
+    """Transform a cropped layer while keeping its authored anchor stable.
+
+    The semantic SVG is rasterized in the canonical 600x1100 coordinate space.
+    We crop only for efficiency, but compute the crop's source-space center
+    before transforming it.  The transformed center is then explicitly mapped
+    to the pose target (x, y). This prevents rotation/scale from changing the
+    layer's placement merely because its transparent margins changed.
+    """
+    bbox = layer.getbbox()
+    if not bbox:
+        return layer, (round(x), round(y))
+
+    layer = layer.crop(bbox)
+    anchor_x = layer.width / 2
+    anchor_y = layer.height / 2
+
+    if scale != 1.0:
+        layer = layer.resize(
+            (max(1, round(layer.width * scale)),
+             max(1, round(layer.height * scale))),
+            Image.Resampling.LANCZOS,
+        )
+
+    if rotation:
+        layer = layer.rotate(
+            rotation,
+            resample=Image.Resampling.BICUBIC,
+            expand=True,
+        )
+
+    # All transforms above are centered on the layer's authored visual center.
+    # Mapping that center to the pose target keeps the semantic part stable.
+    px = round(x - layer.width / 2)
+    py = round(y - layer.height / 2)
+    return layer, (px, py)
+
+
 def render_semantic_character(
     master: str | Path,
     character_id: str,
@@ -79,25 +113,15 @@ def render_semantic_character(
         if not svg:
             continue
         layer = _rasterize_svg_text(svg)
-        bbox = layer.getbbox()
-        if not bbox:
-            continue
-        layer = layer.crop(bbox)
         transform = pose_spec.layers[layer_name]
-        if transform.scale != 1.0:
-            layer = layer.resize(
-                (max(1, round(layer.width * transform.scale)),
-                 max(1, round(layer.height * transform.scale))),
-                Image.Resampling.LANCZOS,
-            )
-        if transform.rotation:
-            layer = layer.rotate(
-                transform.rotation,
-                resample=Image.Resampling.BICUBIC,
-                expand=True,
-            )
-        px = round(transform.x - layer.width / 2)
-        py = round(transform.y - layer.height / 2)
-        canvas.alpha_composite(layer, (px, py))
+        layer, position = _transform_layer(
+            layer,
+            transform.x,
+            transform.y,
+            transform.rotation,
+            transform.scale,
+        )
+        if layer.getbbox():
+            canvas.alpha_composite(layer, position)
 
     return canvas
