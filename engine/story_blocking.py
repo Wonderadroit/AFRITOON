@@ -1,6 +1,7 @@
 """Derive deterministic spatial and entrance/exit blocking from story intent."""
 from __future__ import annotations
 from dataclasses import dataclass
+from .entrance_exit import EntryExitCue
 from .story_director import StoryPlan
 
 
@@ -44,6 +45,37 @@ def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tupl
         stop_x = tx - direction * 70.0
         result.append(StoryBlockingCue(float(beat.at), actor, float(stop_x), float(ay), 1.0, target))
     return tuple(result)
+
+
+def entry_exit_cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tuple[EntryExitCue, ...]:
+    """Derive only explicit entrance/exit language; never infer it from visibility alone."""
+    available = set(positions)
+    result: list[EntryExitCue] = []
+    enter_words = ("enters", "enter", "comes in", "come in", "walks in", "walk in")
+    exit_words = ("leaves", "leave", "walks out", "walk out", "exits", "exit")
+    for beat in plan.beats:
+        if beat.character is None:
+            continue
+        actor = beat.character.strip().lower()
+        if actor not in available:
+            continue
+        text = f"{beat.event} {beat.intent or ''}".lower()
+        if any(word in text for word in enter_words):
+            result.append(EntryExitCue(float(beat.at), actor, "enter", _offscreen_start(positions[actor], positions), 1.0))
+        elif any(word in text for word in exit_words):
+            result.append(EntryExitCue(float(beat.at), actor, "exit", _offscreen_exit(positions[actor], positions), 1.0))
+    return tuple(result)
+
+
+def _offscreen_start(position: tuple[float, float], positions: dict[str, tuple[float, float]]) -> tuple[float, float]:
+    """Choose a deterministic side based on the authored cast center."""
+    center = sum(x for x, _ in positions.values()) / max(1, len(positions))
+    return (-180.0, position[1]) if position[0] >= center else (1260.0, position[1])
+
+
+def _offscreen_exit(position: tuple[float, float], positions: dict[str, tuple[float, float]]) -> tuple[float, float]:
+    center = sum(x for x, _ in positions.values()) / max(1, len(positions))
+    return (1260.0, position[1]) if position[0] >= center else (-180.0, position[1])
 
 
 def cue_at(cues: tuple[StoryBlockingCue, ...], character_id: str, t: float) -> StoryBlockingCue | None:
