@@ -27,6 +27,9 @@ REACTION_RULES = {
     ("mama", "angry"): (("tunde", 0.35, "freeze", "shocked"), ("seyi", 0.60, "look_at_camera", "deadpan")),
 }
 
+APPROACH_WORDS = ("approach", "comes over", "come over", "walk to", "walks to", "go to", "goes to", "join", "joins")
+
+
 def _action_for(beat: StoryBeat) -> str:
     text = f"{beat.event} {beat.intent or ''}".lower()
     if any(word in text for word in ("panic", "power goes off", "shock", "shocked")): return "shock"
@@ -36,11 +39,13 @@ def _action_for(beat: StoryBeat) -> str:
     if any(word in text for word in ("talk", "speak", "say", "question")): return "talk"
     if any(word in text for word in ("turn", "notice", "look")): return "look"
     if any(word in text for word in ("freeze", "silence", "caught")): return "freeze"
-    if any(word in text for word in ("approach", "come over", "walk to", "go to", "join")): return "look"
+    if any(word in text for word in APPROACH_WORDS): return "look"
     return "idle"
+
 
 def _expression_for(beat: StoryBeat) -> str:
     return EMOTION_TO_EXPRESSION.get(beat.emotion.strip().lower(), "neutral")
+
 
 def _focus_for(beat: StoryBeat, actor: str, available: set[str]) -> str | None:
     text = f"{beat.event} {beat.intent or ''}".lower()
@@ -50,6 +55,7 @@ def _focus_for(beat: StoryBeat, actor: str, available: set[str]) -> str | None:
         if candidate in text:
             return candidate
     return None
+
 
 def _reaction_cues_for(plan: StoryPlan, character_id: str) -> list[StoryPerformanceCue]:
     result: list[StoryPerformanceCue] = []
@@ -66,7 +72,22 @@ def _reaction_cues_for(plan: StoryPlan, character_id: str) -> list[StoryPerforma
             if target != target_definition.id or action not in target_definition.actions or expression not in target_definition.expressions:
                 continue
             result.append(StoryPerformanceCue(float(beat.at) + float(delay), target_definition.id, action, expression, timing_for(target_definition.id, action).total, source))
+
+        text = f"{beat.event} {beat.intent or ''}".lower()
+        if any(word in text for word in APPROACH_WORDS):
+            target = _focus_for(beat, source, available)
+            if target == target_definition.id and "look" in target_definition.actions:
+                expression = "curious" if "curious" in target_definition.expressions else target_definition.default_expression
+                result.append(StoryPerformanceCue(
+                    float(beat.at) + 0.25,
+                    target_definition.id,
+                    "look",
+                    expression,
+                    timing_for(target_definition.id, "look").total,
+                    source,
+                ))
     return result
+
 
 def cues_for(plan: StoryPlan, character_id: str) -> tuple[StoryPerformanceCue, ...]:
     definition = character(character_id)
@@ -85,6 +106,7 @@ def cues_for(plan: StoryPlan, character_id: str) -> tuple[StoryPerformanceCue, .
     result.extend(_reaction_cues_for(plan, definition.id))
     result.sort(key=lambda cue: cue.at)
     return tuple(result)
+
 
 def cue_at(cues: tuple[StoryPerformanceCue, ...], t: float) -> StoryPerformanceCue | None:
     current = None
