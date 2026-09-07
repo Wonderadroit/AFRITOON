@@ -69,3 +69,24 @@ def test_mouth_timing_can_override_expression_mouth():
     closed = render_semantic_character(path, "tunde", "idle", expression_name="neutral", mouth_name="closed")
     open_mouth = render_semantic_character(path, "tunde", "idle", expression_name="neutral", mouth_name="open")
     assert closed.tobytes() != open_mouth.tobytes()
+
+
+def test_target_aware_geometry_changes_head_and_body_without_new_artwork():
+    pytest.importorskip("cairosvg")
+    path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
+    center = render_semantic_character(path, "tunde", "idle", gaze="center")
+    right = render_semantic_character(path, "tunde", "idle", gaze="right")
+    assert center.tobytes() != right.tobytes()
+    assert center.size == right.size == (600, 1100)
+    assert center.getbbox() is not None
+    assert right.getbbox() is not None
+
+
+def test_target_aware_geometry_is_temporally_gated():
+    pytest.importorskip("cairosvg")
+    path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
+    anticipation = render_semantic_character(path, "tunde", "shock", gaze="right", phase="anticipation", motion_progress=0.0)
+    action = render_semantic_character(path, "tunde", "shock", gaze="right", phase="action", motion_progress=1.0)
+    recovery = render_semantic_character(path, "tunde", "shock", gaze="right", phase="recovery", motion_progress=0.9)
+    assert anticipation.tobytes() != action.tobytes()
+    assert recovery.tobytes() != action.tobytes()
