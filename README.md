@@ -1,41 +1,48 @@
-# AFRITOON
+# ITANRA
 
-A code-first animation engine for short-form African relatable comedy.
+**ITANRA** is a code-first storytelling and animation engine for short-form African relatable stories.
 
-## Character system
+> **Stories that feel like home.**
 
-AFRITOON has a reusable recurring cast:
+ITANRA is not intended to become a generic animation suite. It is a specialized production system that turns story intent into repeatable animated short-form content.
+
+## The universe
+
+The first recurring cast is:
 
 - **Tunde** — the confident mistake.
 - **Seyi** — the deadpan human reaction button.
 - **Mama** — the final boss of information.
 
-The production chain is:
+The goal is not photorealism. The target is recognizable, expressive, human-looking stylized 2D characters whose identity survives across episodes.
+
+## Production chain
 
 ```text
-CHARACTER ARTWORK
-      ↓
-CHARACTER ASSET CONTRACT
-      ↓
-POSE + EXPRESSION + MOUTH STATE
-      ↓
-INTERACTION / SCENE DIRECTOR
-      ↓
+IDEA / TREND / STORY
+        ↓
+STORY + EMOTIONAL BEATS
+        ↓
+CHARACTER STATE
+        ↓
+DIALOGUE / VOICE
+        ↓
+POSE + EXPRESSION + MOUTH
+        ↓
+SCENE DIRECTOR
+        ↓
 CHARACTER-SPECIFIC RENDERER
-      ↓
+        ↓
 9:16 FRAME
-      ↓
+        ↓
 FFMPEG
-      ↓
-MP4
+        ↓
+MP4 SHORT
 ```
 
-The canonical front masters are original human-looking SVG artwork. Each
-character is resolved independently; Seyi and Mama are never substituted with
-Tunde. The view policy explicitly falls back to the front master when a genuine
-three-quarter or side master has not yet been authored.
+The canonical front masters are original human-looking SVG artwork. Each character is resolved independently; Seyi and Mama are never substituted with Tunde. The view policy falls back to the front master when a genuine three-quarter or side master has not yet been authored.
 
-## Build character layers
+## Character layers
 
 ```bash
 python tools/validate_characters.py
@@ -58,8 +65,7 @@ python tools/render_frame.py scenes/trio_showcase.yaml --time 3.2 --output outpu
 
 ## Render a scene to MP4
 
-Requires FFmpeg. Audio is optional and should be user-supplied, licensed, or
-platform-native rather than committed to the repository.
+Requires FFmpeg. Audio is optional and should be user-supplied, licensed, or platform-native rather than committed to the repository.
 
 ```bash
 python tools/render_scene.py scenes/trio_showcase.yaml --output output/trio.mp4
@@ -71,34 +77,39 @@ With audio:
 python tools/render_scene.py scenes/trio_showcase.yaml --output output/trio.mp4 --audio audio/trend.mp3
 ```
 
-## Scene engine
+## Story engine
 
 ```text
 IDEA / TREND / SONG
         ↓
-   SCENE DEFINITION
+STORY DIRECTOR
         ↓
-   SCENE DIRECTOR
+EMOTIONAL + CHARACTER STATE
         ↓
-   ANIMATION ENGINE
+SCENE DIRECTOR
         ↓
-      MP4 9:16
+ANIMATION ENGINE
+        ↓
+VOICE / AUDIO TIMELINE
+        ↓
+9:16 MP4
 ```
 
-Current foundations include 1080×1920 output, YAML scenes, timeline actions,
-character definitions, emotions, expressions, independent mouth states,
-recurring interactions, multi-character cast state, layered-rig primitives,
-SVG master rendering and FFmpeg encoding.
+Current foundations include 1080×1920 output, YAML scenes, timeline actions, character definitions, emotions, expressions, independent mouth states, recurring interactions, multi-character cast state, layered-rig primitives, SVG master rendering and FFmpeg encoding.
 
 ## Development rule
 
 **Build → render → watch → improve → publish.**
 
-Do not turn AFRITOON into a generic animation suite before the content proves
-what is worth building.
+Do not turn ITANRA into a generic animation suite before the content proves what is worth building.
 
 ## Music
 
-Do not commit copyrighted songs to the repository. The renderer accepts
-user-supplied or appropriately licensed/platform-native audio during
-production.
+Do not commit copyrighted songs to the repository. The renderer accepts user-supplied or appropriately licensed/platform-native audio during production.
+
+## Brand
+
+- Studio / product: **ITANRA**
+- Engine: **ITANRA Engine**
+- First recurring universe: **Tunde, Seyi & Mama**
+- Positioning: **Stories that feel like home.**
