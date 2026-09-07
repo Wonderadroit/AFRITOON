@@ -54,11 +54,12 @@ def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tupl
 
 
 def entry_exit_cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tuple[EntryExitCue, ...]:
-    """Derive only explicit entrance/exit language; never infer it from visibility alone."""
+    """Derive only explicit character entrance/exit language."""
     available = set(positions)
     result: list[EntryExitCue] = []
     enter_words = ("enters", "enter", "comes in", "come in", "walks in", "walk in")
     exit_words = ("leaves", "leave", "walks out", "walk out", "exits", "exit")
+    collective_subjects = ("everybody", "everyone", "they all", "all of them")
     for beat in plan.beats:
         if beat.character is None:
             continue
@@ -69,6 +70,11 @@ def entry_exit_cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float
         if any(word in text for word in enter_words):
             result.append(EntryExitCue(float(beat.at), actor, "enter", _offscreen_start(positions[actor], positions), 1.0))
         elif any(word in text for word in exit_words):
+            # A collective subject such as "everybody leaves" describes the
+            # surrounding cast, not the beat's named character. Do not invent
+            # an exit for the character merely because an exit verb is present.
+            if any(subject in text for subject in collective_subjects):
+                continue
             result.append(EntryExitCue(float(beat.at), actor, "exit", _offscreen_exit(positions[actor], positions), 1.0))
     return tuple(result)
 
