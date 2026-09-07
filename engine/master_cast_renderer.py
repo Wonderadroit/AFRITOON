@@ -8,6 +8,7 @@ from typing import Mapping
 from PIL import Image
 
 from .cast_scene import CastScene
+from .gaze import gaze_direction as _gaze_direction
 from .performance_renderer import apply_performance, performance_for_character
 from .semantic_svg_rig import render_semantic_character
 from .svg_renderer import SVGRenderUnavailable, rasterize_svg
@@ -27,17 +28,19 @@ def _has_semantic_layers(path: Path) -> bool:
 
 def gaze_direction(character: str, focus: str | None, positions: Mapping[str, tuple[float, float, float]] | None = None) -> str:
     """Resolve a bounded horizontal gaze target from scene positions."""
+    return _gaze_direction(character, focus, positions or DEFAULT_POSITIONS)
+
+
+def _temporal_gaze(focus: str | None, phase: str, motion_progress: float) -> str | None:
+    """Acquire and release gaze with the acting beat instead of snapping."""
     if not focus or focus == "camera":
-        return "center"
-    layout = positions or DEFAULT_POSITIONS
-    if character not in layout or focus not in layout:
-        return "center"
-    self_x = float(layout[character][0])
-    target_x = float(layout[focus][0])
-    delta = target_x - self_x
-    if abs(delta) < 24.0:
-        return "center"
-    return "right" if delta > 0 else "left"
+        return focus
+    progress = max(0.0, min(1.0, float(motion_progress)))
+    if phase == "anticipation":
+        return None
+    if phase == "recovery" and progress < 0.70:
+        return None
+    return focus
 
 
 def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Path = ".", positions: Mapping[str, tuple[float, float, float]] | None = None, character_width: int = 420) -> Image.Image:
@@ -45,6 +48,10 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
     canvas = Image.new("RGBA", (W, H), (247, 243, 235, 255))
     state = scene.state_at(frame_time)
     overrides = positions or {}
+    scene_positions = overrides or {
+        cid: (item.x, item.y, item.scale)
+        for cid, item in state.characters.items()
+    }
     for character_id, instance in state.characters.items():
         if not instance.visible:
             continue
@@ -57,7 +64,8 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
         resolved = resolve_view(repo_root, character_id, instance.view)
         width = max(1, int(character_width * scale)); height = max(1, int(round(width * SOURCE_ASPECT)))
         performance = performance_for_character(scene, character_id, frame_time)
-        gaze = gaze_direction(character_id, performance.focus, overrides or {cid: (item.x, item.y, item.scale) for cid, item in state.characters.items()})
+        focus = _temporal_gaze(performance.focus, performance.phase, performance.motion_progress)
+        gaze = gaze_direction(character_id, focus, scene_positions)
         if _has_semantic_layers(resolved.path):
             try:
                 artwork = render_semantic_character(
