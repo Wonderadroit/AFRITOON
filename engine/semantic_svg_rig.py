@@ -55,42 +55,56 @@ def _rasterize_svg_text(source: str) -> Image.Image:
     return Image.open(io.BytesIO(png)).convert("RGBA")
 
 
-def _transform_layer(layer: Image.Image, x: float, y: float, rotation: float, scale: float) -> tuple[Image.Image, tuple[int, int]]:
-    """Transform a cropped layer while keeping its authored anchor stable.
-
-    The semantic SVG is rasterized in the canonical 600x1100 coordinate space.
-    We crop only for efficiency, but compute the crop's source-space center
-    before transforming it.  The transformed center is then explicitly mapped
-    to the pose target (x, y). This prevents rotation/scale from changing the
-    layer's placement merely because its transparent margins changed.
-    """
+def _layer_anchor(layer: Image.Image) -> tuple[Image.Image, float, float] | None:
+    """Return the visible layer plus its canonical source-space visual center."""
     bbox = layer.getbbox()
     if not bbox:
-        return layer, (round(x), round(y))
+        return None
+    left, top, right, bottom = bbox
+    cropped = layer.crop(bbox)
+    return cropped, (left + right) / 2, (top + bottom) / 2
 
-    layer = layer.crop(bbox)
-    anchor_x = layer.width / 2
-    anchor_y = layer.height / 2
 
+def _transform_layer(
+    layer: Image.Image,
+    *,
+    source_anchor: tuple[float, float],
+    target_anchor: tuple[float, float],
+    rotation: float,
+    scale: float,
+) -> tuple[Image.Image, tuple[int, int]]:
+    """Transform a layer around its authored source-space anchor.
+
+    The important distinction is that pose coordinates are interpreted as
+    offsets from the canonical artwork, not as guesses for the cropped bitmap
+    dimensions.  This means changing an SVG's transparent margins cannot make
+    an arm, eye, or head jump when the same pose is reused.
+    """
+    prepared = _layer_anchor(layer)
+    if prepared is None:
+        return layer, (round(target_anchor[0]), round(target_anchor[1]))
+    cropped, source_x, source_y = prepared
+
+    # The visible center is the stable default pivot until explicit artwork
+    # pivots are authored. Keep the source anchor separate from the target
+    # anchor so the pose system remains expressed in canonical coordinates.
+    del source_anchor
     if scale != 1.0:
-        layer = layer.resize(
-            (max(1, round(layer.width * scale)),
-             max(1, round(layer.height * scale))),
+        cropped = cropped.resize(
+            (max(1, round(cropped.width * scale)),
+             max(1, round(cropped.height * scale))),
             Image.Resampling.LANCZOS,
         )
-
     if rotation:
-        layer = layer.rotate(
+        cropped = cropped.rotate(
             rotation,
             resample=Image.Resampling.BICUBIC,
             expand=True,
         )
 
-    # All transforms above are centered on the layer's authored visual center.
-    # Mapping that center to the pose target keeps the semantic part stable.
-    px = round(x - layer.width / 2)
-    py = round(y - layer.height / 2)
-    return layer, (px, py)
+    px = round(target_anchor[0] - cropped.width / 2)
+    py = round(target_anchor[1] - cropped.height / 2)
+    return cropped, (px, py)
 
 
 def render_semantic_character(
@@ -107,21 +121,30 @@ def render_semantic_character(
 
     canvas = Image.new("RGBA", (SOURCE_W, SOURCE_H), (0, 0, 0, 0))
     pose_spec = pose_for(character_id, pose, scale=scale)
+    canonical_pose = pose_for(character_id, "idle", scale=1.0)
 
     for layer_name in LAYER_NAMES:
         svg = groups.get(layer_name)
         if not svg:
             continue
         layer = _rasterize_svg_text(svg)
-        transform = pose_spec.layers[layer_name]
-        layer, position = _transform_layer(
+        prepared = _layer_anchor(layer)
+        if prepared is None:
+            continue
+        _, source_x, source_y = prepared
+
+        current = pose_spec.layers[layer_name]
+        canonical = canonical_pose.layers[layer_name]
+        target_x = source_x + (current.x - canonical.x)
+        target_y = source_y + (current.y - canonical.y)
+        transformed, position = _transform_layer(
             layer,
-            transform.x,
-            transform.y,
-            transform.rotation,
-            transform.scale,
+            source_anchor=(source_x, source_y),
+            target_anchor=(target_x, target_y),
+            rotation=current.rotation,
+            scale=current.scale,
         )
-        if layer.getbbox():
-            canvas.alpha_composite(layer, position)
+        if transformed.getbbox():
+            canvas.alpha_composite(transformed, position)
 
     return canvas
