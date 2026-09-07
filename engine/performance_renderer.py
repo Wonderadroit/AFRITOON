@@ -1,15 +1,9 @@
-"""Apply AFRITOON performance state to canonical character artwork.
-
-The renderer keeps the canonical artwork intact and applies deterministic,
-character-specific performance motion around the artwork.  This is the safe
-intermediate layer before true per-joint layered-rig animation is enabled.
-"""
+"""Apply AFRITOON performance state to canonical character artwork."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from pathlib import Path
 
 from PIL import Image, ImageDraw
 
@@ -34,8 +28,6 @@ PROFILES = {
     "mama": CharacterPerformanceProfile("#8b5a3c"),
 }
 
-# Motion is deliberately different for each character.  These are semantic
-# performance motions, not generic "move everything" presets.
 CHARACTER_MOTION = {
     "tunde": {
         "idle": (0.0, 0.0, 1.0), "talk": (0.0, -2.0, 1.0),
@@ -127,11 +119,16 @@ def _draw_expression(image: Image.Image, character: str, expression: str, mouth:
         draw.line((270 * s, my, 330 * s, my), fill=black, width=stroke)
 
 
-def apply_performance(image: Image.Image, state: PerformanceState, character: str) -> Image.Image:
-    """Render expression, mouth and character-specific body motion."""
+def apply_face_performance(image: Image.Image, state: PerformanceState, character: str) -> Image.Image:
+    """Apply only expression and mouth; body movement belongs to the semantic rig."""
     image = image.convert("RGBA")
     _draw_expression(image, character, state.expression, state.mouth)
+    return image
 
+
+def apply_performance(image: Image.Image, state: PerformanceState, character: str) -> Image.Image:
+    """Legacy whole-artwork performance path kept for fallback rendering."""
+    image = apply_face_performance(image, state, character)
     motions = CHARACTER_MOTION.get(character, CHARACTER_MOTION["tunde"])
     rotation, y_shift, scale = motions.get(state.pose, motions.get("idle", (0.0, 0.0, 1.0)))
     if state.pose == "dance":
