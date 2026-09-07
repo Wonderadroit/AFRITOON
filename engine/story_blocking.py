@@ -1,7 +1,8 @@
-"""Derive simple spatial blocking from story intent."""
+"""Derive deterministic spatial and entrance/exit blocking from story intent."""
 from __future__ import annotations
 from dataclasses import dataclass
 from .story_director import StoryPlan
+
 
 @dataclass(frozen=True)
 class StoryBlockingCue:
@@ -12,12 +13,14 @@ class StoryBlockingCue:
     duration: float = 0.0
     target: str | None = None
 
+
 def _target_id(text: str, available: set[str]) -> str | None:
     lowered = text.lower()
     for candidate in sorted(available):
         if candidate in lowered:
             return candidate
     return None
+
 
 def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tuple[StoryBlockingCue, ...]:
     """Create deterministic approach cues from explicit story intent."""
@@ -42,12 +45,14 @@ def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tupl
         result.append(StoryBlockingCue(float(beat.at), actor, float(stop_x), float(ay), 1.0, target))
     return tuple(result)
 
+
 def cue_at(cues: tuple[StoryBlockingCue, ...], character_id: str, t: float) -> StoryBlockingCue | None:
     current = None
     for cue in cues:
         if cue.character == character_id and cue.at <= float(t):
             current = cue
     return current
+
 
 def position_at(base: tuple[float, float], cue: StoryBlockingCue | None, t: float) -> tuple[float, float]:
     if cue is None:
