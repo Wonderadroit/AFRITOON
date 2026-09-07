@@ -9,11 +9,13 @@ def test_performance_combines_body_face_and_mouth():
         actions=[Action(0.0, "talk"), Action(1.0, "shock")],
         face_timeline=[{"at": 0.0, "expression": "neutral"}, {"at": 1.0, "expression": "shocked"}],
         mouth_cues=mouth_cues("Ah!", 1.0, 0.8),
+        character="tunde",
     )
     assert result.pose == "shock"
     assert result.action == "shock"
     assert result.expression == "shocked"
     assert result.mouth in {"talk_a", "talk_rest"}
+    assert result.phase == "action"
 
 
 def test_performance_defaults_are_stable():
@@ -22,3 +24,4 @@ def test_performance_defaults_are_stable():
     assert result.action == "idle"
     assert result.expression == "neutral"
     assert result.mouth == "closed"
+    assert result.phase == "hold"
