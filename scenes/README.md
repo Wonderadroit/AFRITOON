@@ -1,4 +1,4 @@
-# AFRITOON Scenes
+# ITANRA Scenes
 
 A scene describes timing and composition. Character definitions remain reusable and independent.
 
@@ -6,7 +6,7 @@ A scene describes timing and composition. Character definitions remain reusable 
 
 `scene YAML → interaction cues → CastScene.state_at(t) → character states → cast renderer → frame/video`
 
-The first cast renderer uses the existing procedural renderer as a compatibility fallback. This is deliberate: the production artwork can be introduced without rewriting scene direction or interaction timing.
+The renderer can use the canonical human-looking SVG artwork while preserving the scene and interaction logic.
 
 ## Current showcase
 
