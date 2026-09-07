@@ -5,11 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Mapping
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter
 
 from .cast_scene import CastScene
 from .gaze import gaze_direction as _gaze_direction, interaction_strength as _interaction_strength
-from .performance_renderer import apply_performance, performance_for_character
+from .performance_renderer import performance_for_character
+from .scene_background import render_background
 from .semantic_svg_rig import render_semantic_character
 from .svg_renderer import SVGRenderUnavailable, rasterize_svg
 from .view_policy import resolve_view
@@ -43,15 +44,35 @@ def _temporal_gaze(focus: str | None, phase: str, motion_progress: float) -> str
     return focus
 
 
-def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Path = ".", positions: Mapping[str, tuple[float, float, float]] | None = None, character_width: int = 420) -> Image.Image:
-    """Compose canonical artwork with semantic body, face, temporal acting and target-aware interaction geometry."""
-    canvas = Image.new("RGBA", (W, H), (247, 243, 235, 255))
+def _character_shadow_layer(positions: Mapping[str, tuple[float, float, float]], visible: Mapping[str, bool]) -> Image.Image:
+    """Create soft contact shadows so characters sit in the environment."""
+    shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(shadow, "RGBA")
+    for cid, (x, baseline, scale) in positions.items():
+        if not visible.get(cid, False):
+            continue
+        width = max(90, int(190 * scale))
+        height = max(18, int(34 * scale))
+        draw.ellipse((int(x - width / 2), int(baseline - height / 2), int(x + width / 2), int(baseline + height / 2)), fill=(30, 22, 20, 85))
+    return shadow.filter(ImageFilter.GaussianBlur(14))
+
+
+def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Path = ".", positions: Mapping[str, tuple[float, float, float]] | None = None, character_width: int = 470) -> Image.Image:
+    """Compose canonical artwork with semantic performance and production layout."""
+    canvas = render_background(scene.name, frame_time)
     state = scene.state_at(frame_time)
     overrides = positions or {}
     scene_positions = overrides or {
         cid: (item.x, item.y, item.scale)
         for cid, item in state.characters.items()
     }
+    visible_positions = {
+        cid: (item.x, item.y, item.scale)
+        for cid, item in state.characters.items()
+        if item.visible
+    }
+    canvas = Image.alpha_composite(canvas, _character_shadow_layer(visible_positions, {cid: True for cid in visible_positions}))
+
     for character_id, instance in state.characters.items():
         if not instance.visible:
             continue
@@ -84,9 +105,7 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
                 artwork = artwork.resize((width, height), Image.Resampling.LANCZOS)
             except (SVGRenderUnavailable, ValueError, OSError):
                 artwork = rasterize_svg(resolved.path, width, height)
-                artwork = apply_performance(artwork, performance, character_id)
         else:
             artwork = rasterize_svg(resolved.path, width, height)
-            artwork = apply_performance(artwork, performance, character_id)
         canvas.alpha_composite(artwork, (int(x - artwork.width / 2), int(baseline - artwork.height)))
     return canvas
