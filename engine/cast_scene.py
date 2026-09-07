@@ -121,10 +121,11 @@ class CastScene:
         return cls(interaction_name or source.stem, duration, instances, dialogue, story_plan,
                    spatial_cues, entry_exit_cues)
 
-    def _entry_exit_is_active(self, character_id: str, now: float) -> bool:
+    @staticmethod
+    def _entry_exit_is_active(character_id: str, now: float, cues: Iterable[EntryExitCue]) -> bool:
         """Return whether an entrance/exit currently owns the character's position."""
         cid = character_id.strip().lower()
-        for cue in self.entry_exit_cues:
+        for cue in cues:
             if cue.character.strip().lower() != cid:
                 continue
             start = float(cue.at)
@@ -169,12 +170,11 @@ class CastScene:
             moved_x, moved_y, _ = moved[cid]
             ex, ey, _, entry_visible = entry_states[cid]
             has_entry_exit = any(cue.character.strip().lower() == cid for cue in entry_exit)
-            entry_active = self._entry_exit_is_active(cid, now)
+            entry_active = self._entry_exit_is_active(cid, now, entry_exit)
 
-            # Story-derived cues participate in the same timeline as explicit cues.
-            # While entering/exiting, the entrance/exit system owns the position.
-            # Once an entrance completes, normal spatial blocking may take over;
-            # after an exit completes, the character remains off-frame and hidden.
+            # During an entrance/exit, the entry/exit timeline owns position.
+            # After an entrance completes, ordinary spatial blocking takes over.
+            # After an exit completes, the character remains off-frame and hidden.
             if has_entry_exit and (entry_active or not entry_visible):
                 x, y, visible = ex, ey, entry_visible
             elif has_entry_exit:
