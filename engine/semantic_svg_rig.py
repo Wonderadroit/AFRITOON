@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 
 from .assets import LAYER_NAMES
-from .character_pose import pose_for_phase
+from .character_pose import pose_for_motion, pose_for_phase
 from .expressions import expression
 from .svg_renderer import SVGRenderUnavailable
 
@@ -59,8 +59,12 @@ def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str 
         transform = _face_transform(expression_name, layer, mouth_name)
         if transform:
             wrapper_group.set("transform", transform)
-        wrapper_group.set("stroke", "#171717"); wrapper_group.set("stroke-width", "12"); wrapper_group.set("stroke-linejoin", "round"); wrapper_group.set("stroke-linecap", "round")
-        wrapper.append(wrapper_group); groups[layer] = ET.tostring(wrapper, encoding="unicode")
+        wrapper_group.set("stroke", "#171717")
+        wrapper_group.set("stroke-width", "12")
+        wrapper_group.set("stroke-linejoin", "round")
+        wrapper_group.set("stroke-linecap", "round")
+        wrapper.append(wrapper_group)
+        groups[layer] = ET.tostring(wrapper, encoding="unicode")
     return groups
 
 
@@ -93,14 +97,17 @@ def _transform_layer(layer: Image.Image, *, target_anchor: tuple[float, float], 
     return cropped, (round(target_anchor[0] - cropped.width / 2), round(target_anchor[1] - cropped.height / 2))
 
 
-def render_semantic_character(master: str | Path, character_id: str, pose: str, scale: float = 1.0, expression_name: str = "neutral", mouth_name: str | None = None, phase: str = "hold") -> Image.Image:
-    """Render canonical artwork with body pose, facial performance and acting phase."""
+def render_semantic_character(master: str | Path, character_id: str, pose: str, scale: float = 1.0, expression_name: str = "neutral", mouth_name: str | None = None, phase: str = "hold", motion_progress: float | None = None) -> Image.Image:
+    """Render canonical artwork with body pose, facial performance and motion."""
     master_path = Path(master)
     groups = _layer_svgs(master_path, expression_name=expression_name, mouth_name=mouth_name)
     if not groups:
         raise ValueError(f"Master artwork has no semantic layers: {master_path}")
     canvas = Image.new("RGBA", (SOURCE_W, SOURCE_H), (0, 0, 0, 0))
-    pose_spec = pose_for_phase(character_id, pose, phase, scale=scale)
+    if motion_progress is None:
+        pose_spec = pose_for_phase(character_id, pose, phase, scale=scale)
+    else:
+        pose_spec = pose_for_motion(character_id, pose, motion_progress, scale=scale)
     canonical_pose = pose_for_phase(character_id, "idle", "hold", scale=1.0)
     for layer_name in LAYER_NAMES:
         svg = groups.get(layer_name)
@@ -111,8 +118,10 @@ def render_semantic_character(master: str | Path, character_id: str, pose: str, 
         if prepared is None:
             continue
         _, source_x, source_y = prepared
-        current = pose_spec.layers[layer_name]; canonical = canonical_pose.layers[layer_name]
-        target_x = source_x + (current.x - canonical.x); target_y = source_y + (current.y - canonical.y)
+        current = pose_spec.layers[layer_name]
+        canonical = canonical_pose.layers[layer_name]
+        target_x = source_x + (current.x - canonical.x)
+        target_y = source_y + (current.y - canonical.y)
         transformed, position = _transform_layer(layer, target_anchor=(target_x, target_y), rotation=current.rotation, scale=current.scale)
         if transformed.getbbox():
             canvas.alpha_composite(transformed, position)
