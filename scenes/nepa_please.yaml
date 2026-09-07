@@ -3,6 +3,51 @@ scene:
   duration: 24.0
   interaction: nepa_panic
   format: vertical_9_16
+  story:
+    title: "NEPA, Please!"
+    beats:
+      - at: 0.0
+        event: "everybody leaves"
+        character: tunde
+        emotion: calm
+        intent: "confidently celebrate being alone"
+      - at: 4.0
+        event: "tunde enjoys himself"
+        character: tunde
+        emotion: funny
+        intent: "overconfidence"
+      - at: 7.0
+        event: "power goes off"
+        character: tunde
+        emotion: shocked
+        intent: "panic"
+      - at: 12.8
+        event: "seyi appears and observes"
+        character: seyi
+        emotion: deadpan
+        intent: "watch Tunde suffer"
+      - at: 14.0
+        event: "tunde realizes the problem"
+        character: tunde
+        emotion: surprised
+        intent: "try to recover"
+      - at: 18.0
+        event: "mama enters"
+        character: mama
+        emotion: deadpan
+        intent: "notice everything"
+      - at: 21.0
+        event: "mama exposes Tunde"
+        character: mama
+        emotion: deadpan
+        intent: "one question ends the mystery"
+        payoff: true
+      - at: 22.8
+        event: "seyi reacts"
+        character: seyi
+        emotion: deadpan
+        intent: "silent confirmation"
+        payoff: true
   characters:
     - id: tunde
       position: [330, 1450]
