@@ -10,6 +10,7 @@ class CharacterCue:
     character: str
     pose: str = "idle"
     expression: str = "neutral"
+    visible: bool | None = None
 
 
 @dataclass(frozen=True)
@@ -52,12 +53,14 @@ INTERACTIONS = {
         name="nepa_panic",
         cues=(
             CharacterCue(0.0, "tunde", "talk", "happy"),
+            CharacterCue(0.0, "seyi", "idle", "deadpan", False),
+            CharacterCue(0.0, "mama", "idle", "neutral", False),
             CharacterCue(3.6, "tunde", "idle", "happy"),
             CharacterCue(7.0, "tunde", "shock", "shocked"),
             CharacterCue(9.4, "tunde", "check_pocket", "surprised"),
-            CharacterCue(12.8, "seyi", "look", "deadpan"),
+            CharacterCue(12.8, "seyi", "look", "deadpan", True),
             CharacterCue(14.5, "tunde", "talk", "shocked"),
-            CharacterCue(18.0, "mama", "stand", "neutral"),
+            CharacterCue(18.0, "mama", "stand", "neutral", True),
             CharacterCue(19.8, "tunde", "freeze", "shocked"),
             CharacterCue(21.0, "mama", "angry", "angry"),
             CharacterCue(22.8, "seyi", "look_at_camera", "deadpan"),
