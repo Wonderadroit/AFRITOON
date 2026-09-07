@@ -43,3 +43,12 @@ def test_semantic_renderer_changes_pixels_between_poses():
     assert idle.size == (600, 1100)
     assert dance.size == idle.size
     assert idle.tobytes() != dance.tobytes()
+
+
+def test_semantic_renderer_supports_all_canonical_characters():
+    pytest.importorskip("cairosvg")
+    for character in ("tunde", "seyi", "mama"):
+        path = ROOT / "assets" / "characters" / character / "art" / f"{character}_front.svg"
+        image = render_semantic_character(path, character, "idle")
+        assert image.size == (600, 1100)
+        assert image.getbbox() is not None
