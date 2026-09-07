@@ -15,15 +15,17 @@ class CharacterInstance:
     view: str = "front"
     pose: str = "idle"
     expression: str = "neutral"
+    visible: bool = True
 
     @property
     def id(self) -> str:
         return self.definition.id
 
-    def with_state(self, *, pose=None, expression=None, view=None):
+    def with_state(self, *, pose=None, expression=None, view=None, visible=None):
         next_view = self.view if view is None else view
         next_pose = self.pose if pose is None else pose
         next_expression = self.expression if expression is None else expression
+        next_visible = self.visible if visible is None else bool(visible)
 
         if next_view not in self.definition.views:
             raise ValueError(f"Unsupported view for {self.id}: {next_view}")
@@ -40,6 +42,7 @@ class CharacterInstance:
             view=next_view,
             pose=next_pose,
             expression=next_expression,
+            visible=next_visible,
         )
 
 
@@ -79,6 +82,7 @@ class CharacterLibrary:
             view=view,
             pose=pose,
             expression=expression,
+            visible=bool(kwargs.get("visible", True)),
         )
 
 
