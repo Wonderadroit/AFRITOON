@@ -1,50 +1,63 @@
-# AFRITOON Roadmap
+# ITANRA Roadmap
 
 ## Principle
 
 Content quality and production speed come before feature count.
 
-## v0.1 — now
+ITANRA is built to prove that a specialized storytelling engine can turn relatable African experiences into repeatable short-form animation faster than a conventional manual workflow.
 
-- One procedural character
+## Phase 1 — Foundation
+
+- Reusable Tunde / Seyi / Mama cast
 - Timeline-driven actions
 - 9:16 rendering
 - YAML scenes
-- FFmpeg MP4 output
+- SVG semantic layers
+- Expression and mouth states
+- Multi-character composition
 
-## v0.2 — next
+## Phase 2 — Performance
 
-- Multiple characters in one scene
-- Character positions and independent timelines
-- Simple props
-- Better action transitions
+- Character-specific motion profiles
+- Better gestures and reactions
+- Eye direction
+- Expression transitions
+- Dialogue-driven mouth timing
+- Camera reactions
 
-## v0.3
+## Phase 3 — Story intelligence
 
-- Reusable action library
-- Expression state machine
-- Camera cuts, zoom and shake
+- Story beats
+- Emotional timeline
+- Character-state transitions
+- Dialogue intent
+- Scene/camera intent
+- Reusable comedy and storytelling patterns
 
-## v0.4
+## Phase 4 — Production loop
 
-- PNG/SVG asset characters
-- Layered character parts
-- Background assets
+```text
+IDEA
+ ↓
+STORY
+ ↓
+SCENE
+ ↓
+PERFORMANCE
+ ↓
+VOICE
+ ↓
+RENDER
+ ↓
+WATCH
+ ↓
+IMPROVE
+ ↓
+PUBLISH
+```
 
-## v0.5
+## First production target
 
-- Dialogue and subtitles
-- Mouth states
-- Audio track support
+Produce the first complete short, **NEPA, Please!**, then use a small batch of additional episodes to measure retention, completion, rewatches, shares, comments and follows.
 
-## v0.6+
-
-- Beat/lyric timing
-- Trend-song scene templates
-- Scene batching
-- Faster rendering
-- Asset extraction/segmentation
-
-## v1.0 target
-
-A creator can turn an idea into a repeatable short by defining a scene, rendering it, adding appropriate audio, and publishing.
+Do not build large features without evidence that they improve production speed or content quality.
