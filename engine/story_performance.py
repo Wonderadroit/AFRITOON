@@ -1,25 +1,15 @@
-"""Translate story beats into deterministic performance cues.
-
-This module is deliberately rule-based. Story intent can influence performance,
-but it does not replace explicit scene interaction cues. Existing hand-authored
-scene cues therefore remain the highest-priority performance source.
-"""
-
+"""Translate story beats into deterministic performance cues."""
 from __future__ import annotations
-
 from dataclasses import dataclass
-
 from .acting_timing import timing_for
 from .character_spec import character
 from .story_director import StoryBeat, StoryPlan
-
 
 EMOTION_TO_EXPRESSION = {
     "calm": "neutral", "happy": "happy", "funny": "happy", "curious": "curious",
     "nostalgic": "sad", "sad": "sad", "hopeful": "happy", "angry": "angry",
     "surprised": "surprised", "shocked": "shocked", "deadpan": "deadpan",
 }
-
 
 @dataclass(frozen=True)
 class StoryPerformanceCue:
@@ -30,14 +20,12 @@ class StoryPerformanceCue:
     duration: float | None = None
     focus: str | None = None
 
-
 REACTION_RULES = {
     ("tunde", "shock"): (("seyi", 0.35, "look", "deadpan"), ("mama", 0.65, "turn", "curious")),
     ("tunde", "freeze"): (("seyi", 0.40, "look_at_camera", "deadpan"), ("mama", 0.80, "look_at_camera", "deadpan")),
     ("tunde", "check_pocket"): (("seyi", 0.45, "look", "deadpan"),),
     ("mama", "angry"): (("tunde", 0.35, "freeze", "shocked"), ("seyi", 0.60, "look_at_camera", "deadpan")),
 }
-
 
 def _action_for(beat: StoryBeat) -> str:
     text = f"{beat.event} {beat.intent or ''}".lower()
@@ -48,17 +36,25 @@ def _action_for(beat: StoryBeat) -> str:
     if any(word in text for word in ("talk", "speak", "say", "question")): return "talk"
     if any(word in text for word in ("turn", "notice", "look")): return "look"
     if any(word in text for word in ("freeze", "silence", "caught")): return "freeze"
+    if any(word in text for word in ("approach", "come over", "walk to", "go to", "join")): return "look"
     return "idle"
-
 
 def _expression_for(beat: StoryBeat) -> str:
     return EMOTION_TO_EXPRESSION.get(beat.emotion.strip().lower(), "neutral")
 
+def _focus_for(beat: StoryBeat, actor: str, available: set[str]) -> str | None:
+    text = f"{beat.event} {beat.intent or ''}".lower()
+    if any(word in text for word in ("camera", "audience")):
+        return "camera"
+    for candidate in sorted(available - {actor}):
+        if candidate in text:
+            return candidate
+    return None
 
 def _reaction_cues_for(plan: StoryPlan, character_id: str) -> list[StoryPerformanceCue]:
-    """Derive sparse contextual reactions with finite acting windows."""
     result: list[StoryPerformanceCue] = []
     target_definition = character(character_id)
+    available = {"tunde", "seyi", "mama"}
     for beat in plan.beats:
         if beat.character is None:
             continue
@@ -69,21 +65,13 @@ def _reaction_cues_for(plan: StoryPlan, character_id: str) -> list[StoryPerforma
         for target, delay, action, expression in REACTION_RULES.get((source, source_action), ()):
             if target != target_definition.id or action not in target_definition.actions or expression not in target_definition.expressions:
                 continue
-            result.append(StoryPerformanceCue(
-                at=float(beat.at) + float(delay),
-                character=target_definition.id,
-                action=action,
-                expression=expression,
-                duration=timing_for(target_definition.id, action).total,
-                focus=source,
-            ))
+            result.append(StoryPerformanceCue(float(beat.at) + float(delay), target_definition.id, action, expression, timing_for(target_definition.id, action).total, source))
     return result
 
-
 def cues_for(plan: StoryPlan, character_id: str) -> tuple[StoryPerformanceCue, ...]:
-    """Return deterministic direct beats plus sparse contextual reactions."""
     definition = character(character_id)
     result: list[StoryPerformanceCue] = []
+    available = {"tunde", "seyi", "mama"}
     for beat in plan.beats:
         if beat.character is not None and beat.character.strip().lower() != definition.id:
             continue
@@ -93,14 +81,12 @@ def cues_for(plan: StoryPlan, character_id: str) -> tuple[StoryPerformanceCue, .
         expression = _expression_for(beat)
         if expression not in definition.expressions:
             expression = definition.default_expression
-        result.append(StoryPerformanceCue(beat.at, definition.id, action, expression))
+        result.append(StoryPerformanceCue(beat.at, definition.id, action, expression, focus=_focus_for(beat, definition.id, available)))
     result.extend(_reaction_cues_for(plan, definition.id))
     result.sort(key=lambda cue: cue.at)
     return tuple(result)
 
-
 def cue_at(cues: tuple[StoryPerformanceCue, ...], t: float) -> StoryPerformanceCue | None:
-    """Return the latest active story-derived performance cue at time ``t``."""
     current = None
     now = float(t)
     for cue in cues:
