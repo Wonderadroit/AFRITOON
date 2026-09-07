@@ -7,6 +7,7 @@ import math
 
 from PIL import Image, ImageDraw
 
+from .acting import acting_expression
 from .cast_scene import CastScene
 from .mouth_timing import mouth_cues
 from .performance import PerformanceState
@@ -159,9 +160,10 @@ def performance_for_character(scene: CastScene, character: str, frame_time: floa
         if cue.at <= frame_time < cue.at + cue.duration:
             active = cue.state.name
             break
+    resolved_expression = acting_expression(character, instance.pose, instance.expression)
     return PerformanceState(
         pose=instance.pose,
         action=instance.pose,
-        expression=instance.expression,
+        expression=resolved_expression,
         mouth=active,
     )
