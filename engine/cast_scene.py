@@ -171,9 +171,13 @@ class CastScene:
         for cid, item in states.items():
             x, y, _ = moved[cid]
             ex, ey, _, blocking_visible = entry_exit[cid]
-            if self.entry_exit_cues:
+            active_entry_exit = any(
+                cue.character.strip().lower() == cid and cue.at <= now
+                for cue in self.entry_exit_cues
+            )
+            if active_entry_exit:
                 x, y = ex, ey
-                visible = item.visible and blocking_visible
+                visible = blocking_visible
             else:
                 visible = item.visible
             states[cid] = CharacterInstance(
