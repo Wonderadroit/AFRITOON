@@ -11,6 +11,7 @@ from .dialogue import DialogueLine
 from .interactions import CharacterCue, interaction
 from .story_director import StoryPlan, story_plan_from_yaml
 from .story_performance import cue_at, cues_for
+from .spatial_blocking import SpatialCue, resolve_positions
 
 
 @dataclass(frozen=True)
@@ -27,18 +28,23 @@ class CastScene:
         characters: Iterable[CharacterInstance],
         dialogue: Iterable[DialogueLine] = (),
         story_plan: StoryPlan | None = None,
+        spatial_cues: Iterable[SpatialCue] = (),
     ):
         self.name = str(name)
         self.duration = float(duration)
         self.characters = {item.definition.id: item for item in characters}
         self.dialogue = tuple(sorted(dialogue, key=lambda item: item.at))
         self.story_plan = story_plan
+        self.spatial_cues = tuple(sorted(spatial_cues, key=lambda item: item.at))
         if self.duration <= 0:
             raise ValueError("CastScene duration must be positive")
         if not self.characters:
             raise ValueError("CastScene requires at least one character")
         if story_plan is not None and story_plan.duration != self.duration:
             raise ValueError("StoryPlan duration must match CastScene duration")
+        unknown = {cue.character for cue in self.spatial_cues} - set(self.characters)
+        if unknown:
+            raise ValueError(f"Spatial cue references unknown character(s): {sorted(unknown)}")
 
     @classmethod
     def from_interaction(cls, name: str, duration: float | None = None):
@@ -53,7 +59,7 @@ class CastScene:
 
     @classmethod
     def from_yaml(cls, path: str | Path):
-        """Load cast composition, story plan, interaction and dialogue from YAML."""
+        """Load cast composition, story plan, spatial blocking and dialogue from YAML."""
         source = Path(path)
         data = yaml.safe_load(source.read_text(encoding="utf-8")) or {}
         raw = data.get("scene", data)
@@ -69,6 +75,18 @@ class CastScene:
             )
             for item in dialogue_items
         )
+        spatial_cues = []
+        for item in raw.get("blocking", []):
+            destination = item.get("to")
+            if not isinstance(destination, (list, tuple)) or len(destination) != 2:
+                raise ValueError(f"Invalid blocking destination for {item.get('character')}")
+            spatial_cues.append(SpatialCue(
+                at=float(item["at"]),
+                character=str(item["character"]),
+                to=(float(destination[0]), float(destination[1])),
+                duration=float(item.get("duration", 0.0)),
+            ))
+
         story_plan = None
         if raw.get("story") is not None:
             story_raw = dict(raw["story"])
@@ -79,6 +97,7 @@ class CastScene:
             scene = cls.from_interaction(interaction_name, duration or None)
             scene.dialogue = dialogue
             scene.story_plan = story_plan
+            scene.spatial_cues = tuple(spatial_cues)
             return scene
 
         instances = []
@@ -94,14 +113,11 @@ class CastScene:
                 scale=float(item.get("scale", 1.0)),
                 visible=bool(item.get("visible", True)),
             ))
-        return cls(interaction_name or source.stem, duration, instances, dialogue, story_plan)
+        return cls(interaction_name or source.stem, duration, instances, dialogue, story_plan, spatial_cues)
 
     def state_at(self, t: float) -> CastState:
         now = max(0.0, min(float(t), self.duration))
         states = dict(self.characters)
-
-        # Story-derived performance is a deterministic baseline. Explicit
-        # interaction cues below always win when a scene has hand-authored cues.
         if self.story_plan is not None:
             for character_id in self.characters:
                 cue = cue_at(cues_for(self.story_plan, character_id), now)
@@ -110,7 +126,6 @@ class CastScene:
                         pose=cue.action,
                         expression=cue.expression,
                     )
-
         try:
             cues = interaction(self.name).cues
         except ValueError:
@@ -119,12 +134,21 @@ class CastScene:
             applicable = [c for c in cues if c.character == character_id and c.time <= now]
             if applicable:
                 cue = max(applicable, key=lambda item: item.time)
-                visibility = cue.visible
                 states[character_id] = states[character_id].with_state(
                     pose=cue.pose,
                     expression=cue.expression,
-                    visible=visibility,
+                    visible=cue.visible,
                 )
+
+        base_positions = {cid: (item.x, item.y, item.scale) for cid, item in states.items()}
+        moved = resolve_positions(now, base_positions, self.spatial_cues)
+        for cid, item in states.items():
+            x, y, _ = moved[cid]
+            states[cid] = CharacterInstance(
+                definition=item.definition, x=x, y=y, scale=item.scale,
+                view=item.view, pose=item.pose, expression=item.expression,
+                visible=item.visible,
+            )
         return CastState(now, states)
 
     def cues(self) -> Tuple[CharacterCue, ...]:
