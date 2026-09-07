@@ -21,11 +21,11 @@ scene:
         character: tunde
         emotion: shocked
         intent: "panic"
-      - at: 12.8
-        event: "seyi appears and observes"
+      - at: 12.0
+        event: "seyi enters"
         character: seyi
         emotion: deadpan
-        intent: "watch Tunde suffer"
+        intent: "walks in to watch Tunde suffer"
       - at: 14.0
         event: "tunde realizes the problem"
         character: tunde
@@ -35,7 +35,7 @@ scene:
         event: "mama enters"
         character: mama
         emotion: deadpan
-        intent: "notice everything"
+        intent: "comes in and notices everything"
       - at: 21.0
         event: "mama exposes Tunde"
         character: mama
