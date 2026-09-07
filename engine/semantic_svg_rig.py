@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from functools import lru_cache
 import io
 import xml.etree.ElementTree as ET
 
@@ -66,7 +67,21 @@ def _face_transform(expression_name: str, layer: str, mouth_name: str | None = N
     return " ".join(transforms) or None
 
 
-def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0) -> dict[str, str]:
+def _quantize(value: float, step: float) -> float:
+    return round(round(float(value) / step) * step, 4)
+
+
+@lru_cache(maxsize=512)
+def _layer_svgs_cached(
+    master_name: str,
+    expression_name: str,
+    mouth_name: str | None,
+    gaze: str,
+    phase: str,
+    motion_progress: float,
+    interaction_strength: float,
+) -> tuple[tuple[str, str], ...]:
+    master = Path(master_name)
     root = ET.fromstring(master.read_text(encoding="utf-8"))
     groups: dict[str, str] = {}
     for node in root.iter():
@@ -77,25 +92,64 @@ def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str 
             continue
         wrapper = ET.Element(f"{{{SVG_NS}}}svg", {"viewBox": f"0 0 {SOURCE_W} {SOURCE_H}"})
         wrapper_group = ET.fromstring(ET.tostring(node, encoding="unicode"))
-        transform = _face_transform(expression_name, layer, mouth_name, gaze, phase, motion_progress, interaction_strength)
+        transform = _face_transform(
+            expression_name,
+            layer,
+            mouth_name,
+            gaze,
+            phase,
+            motion_progress,
+            interaction_strength,
+        )
         if transform:
             wrapper_group.set("transform", transform)
-        wrapper_group.set("stroke", "#171717")
-        wrapper_group.set("stroke-width", "12")
-        wrapper_group.set("stroke-linejoin", "round")
-        wrapper_group.set("stroke-linecap", "round")
+        # Preserve the artwork's own line language. The previous renderer
+        # forced every semantic layer to a 12px outline, making small
+        # features look heavy and synthetic at phone-sized output.
         wrapper.append(wrapper_group)
         groups[layer] = ET.tostring(wrapper, encoding="unicode")
-    return groups
+    return tuple(groups.items())
 
 
-def _rasterize_svg_text(source: str) -> Image.Image:
+def _layer_svgs(
+    master: Path,
+    expression_name: str = "neutral",
+    mouth_name: str | None = None,
+    gaze: str = "center",
+    phase: str = "hold",
+    motion_progress: float = 1.0,
+    interaction_strength: float = 1.0,
+) -> dict[str, str]:
+    return dict(
+        _layer_svgs_cached(
+            str(master.resolve()),
+            expression_name,
+            mouth_name,
+            gaze,
+            phase,
+            _quantize(motion_progress, 0.08),
+            _quantize(interaction_strength, 0.05),
+        )
+    )
+
+
+@lru_cache(maxsize=1024)
+def _rasterize_svg_cached(source: str) -> Image.Image:
     try:
         import cairosvg
     except ImportError as exc:
         raise SVGRenderUnavailable("CairoSVG is required for semantic SVG rendering") from exc
-    png = cairosvg.svg2png(bytestring=source.encode("utf-8"), output_width=SOURCE_W, output_height=SOURCE_H)
+    png = cairosvg.svg2png(
+        bytestring=source.encode("utf-8"),
+        output_width=SOURCE_W,
+        output_height=SOURCE_H,
+    )
     return Image.open(io.BytesIO(png)).convert("RGBA")
+
+
+def _rasterize_svg_text(source: str) -> Image.Image:
+    # Return a copy because the renderer subsequently crops/transforms it.
+    return _rasterize_svg_cached(source).copy()
 
 
 def _layer_anchor(layer: Image.Image) -> tuple[Image.Image, float, float] | None:
