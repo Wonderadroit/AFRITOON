@@ -17,29 +17,26 @@ SOURCE_W, SOURCE_H = 600, 1100
 SVG_NS = "http://www.w3.org/2000/svg"
 
 
-def _svg_namespace(tag: str) -> str:
-    return tag.split("}", 1)[-1]
-
-
-def _interaction_geometry(gaze: str, phase: str, motion_progress: float) -> tuple[float, float]:
+def _interaction_geometry(gaze: str, phase: str, motion_progress: float, strength: float = 1.0) -> tuple[float, float]:
     """Return bounded head/body orientation caused by a target-aware reaction."""
     direction = {"left": -1.0, "right": 1.0, "center": 0.0}.get(gaze, 0.0)
     progress = max(0.0, min(1.0, float(motion_progress)))
+    strength = max(0.0, min(1.0, float(strength)))
     phase_amount = {
         "anticipation": 0.0,
         "action": progress,
         "hold": 1.0,
         "recovery": max(0.0, 1.0 - progress),
     }.get(phase, progress)
-    amount = max(0.0, min(1.0, phase_amount))
+    amount = max(0.0, min(1.0, phase_amount)) * strength
     return direction * 3.0 * amount, direction * 1.0 * amount
 
 
-def _face_transform(expression_name: str, layer: str, mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0) -> str | None:
+def _face_transform(expression_name: str, layer: str, mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0) -> str | None:
     state = expression(expression_name)
     transforms: list[str] = []
     expression_head_angle = {"neutral": 0.0, "happy": -2.0, "curious": -4.0, "shocked": 2.0, "deadpan": 1.0, "angry": -2.0, "sad": 3.0, "laughing": -3.0, "surprised": 2.0}[state.name]
-    interaction_head_angle, _ = _interaction_geometry(gaze, phase, motion_progress)
+    interaction_head_angle, _ = _interaction_geometry(gaze, phase, motion_progress, interaction_strength)
     head_angle = expression_head_angle + interaction_head_angle
     face_layers = {"head", "ears", "front_hair", "left_eye", "right_eye", "left_brow", "right_brow", "nose", "mouth"}
     if layer in face_layers and head_angle:
@@ -47,7 +44,7 @@ def _face_transform(expression_name: str, layer: str, mouth_name: str | None = N
     if layer in {"left_eye", "right_eye"}:
         eye_scale_y = {"normal": 1.0, "happy": 0.78, "wide": 1.22, "closed": 0.48, "narrow": 0.72, "sad": 0.86}.get(state.eyes, 1.0)
         transforms.append(f"translate(0 330) scale(1 {eye_scale_y}) translate(0 -330)")
-        gaze_shift = {"left": -9.0, "right": 9.0, "center": 0.0}.get(gaze, 0.0)
+        gaze_shift = {"left": -9.0, "right": 9.0, "center": 0.0}.get(gaze, 0.0) * max(0.0, min(1.0, float(interaction_strength)))
         if gaze_shift:
             transforms.append(f"translate({gaze_shift} 0)")
     if layer in {"left_brow", "right_brow"}:
@@ -64,7 +61,7 @@ def _face_transform(expression_name: str, layer: str, mouth_name: str | None = N
     return " ".join(transforms) or None
 
 
-def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0) -> dict[str, str]:
+def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0) -> dict[str, str]:
     root = ET.fromstring(master.read_text(encoding="utf-8"))
     groups: dict[str, str] = {}
     for node in root.iter():
@@ -75,7 +72,7 @@ def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str 
             continue
         wrapper = ET.Element(f"{{{SVG_NS}}}svg", {"viewBox": f"0 0 {SOURCE_W} {SOURCE_H}"})
         wrapper_group = ET.fromstring(ET.tostring(node, encoding="unicode"))
-        transform = _face_transform(expression_name, layer, mouth_name, gaze, phase, motion_progress)
+        transform = _face_transform(expression_name, layer, mouth_name, gaze, phase, motion_progress, interaction_strength)
         if transform:
             wrapper_group.set("transform", transform)
         wrapper_group.set("stroke", "#171717")
@@ -116,11 +113,12 @@ def _transform_layer(layer: Image.Image, *, target_anchor: tuple[float, float], 
     return cropped, (round(target_anchor[0] - cropped.width / 2), round(target_anchor[1] - cropped.height / 2))
 
 
-def render_semantic_character(master: str | Path, character_id: str, pose: str, scale: float = 1.0, expression_name: str = "neutral", mouth_name: str | None = None, phase: str = "hold", motion_progress: float | None = None, gaze: str = "center") -> Image.Image:
-    """Render canonical artwork with body pose, facial performance and target-aware interaction geometry."""
+def render_semantic_character(master: str | Path, character_id: str, pose: str, scale: float = 1.0, expression_name: str = "neutral", mouth_name: str | None = None, phase: str = "hold", motion_progress: float | None = None, gaze: str = "center", interaction_strength: float = 1.0) -> Image.Image:
+    """Render canonical artwork with body pose, face, gaze and bounded interaction geometry."""
     master_path = Path(master)
     effective_progress = 1.0 if motion_progress is None else motion_progress
-    groups = _layer_svgs(master_path, expression_name=expression_name, mouth_name=mouth_name, gaze=gaze, phase=phase, motion_progress=effective_progress)
+    effective_strength = max(0.0, min(1.0, float(interaction_strength)))
+    groups = _layer_svgs(master_path, expression_name=expression_name, mouth_name=mouth_name, gaze=gaze, phase=phase, motion_progress=effective_progress, interaction_strength=effective_strength)
     if not groups:
         raise ValueError(f"Master artwork has no semantic layers: {master_path}")
     canvas = Image.new("RGBA", (SOURCE_W, SOURCE_H), (0, 0, 0, 0))
@@ -129,7 +127,7 @@ def render_semantic_character(master: str | Path, character_id: str, pose: str, 
     else:
         pose_spec = pose_for_motion(character_id, pose, motion_progress, scale=scale)
     canonical_pose = pose_for_phase(character_id, "idle", "hold", scale=1.0)
-    _, body_turn = _interaction_geometry(gaze, phase, effective_progress)
+    _, body_turn = _interaction_geometry(gaze, phase, effective_progress, effective_strength)
     for layer_name in LAYER_NAMES:
         svg = groups.get(layer_name)
         if not svg:
