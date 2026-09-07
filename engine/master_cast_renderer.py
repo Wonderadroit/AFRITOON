@@ -42,6 +42,9 @@ def render_master_cast(
     overrides = positions or {}
 
     for character_id, instance in state.characters.items():
+        if not instance.visible:
+            continue
+
         if character_id in overrides:
             x, baseline, scale = overrides[character_id]
         elif instance.x != 540.0 or instance.y != 1150.0 or instance.scale != 1.0:
