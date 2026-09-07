@@ -10,7 +10,7 @@ from PIL import Image
 
 from .assets import LAYER_NAMES
 from .character_pose import pose_for
-from .svg_renderer import SVGRenderUnavailable, rasterize_svg
+from .svg_renderer import SVGRenderUnavailable
 
 SOURCE_W, SOURCE_H = 600, 1100
 
@@ -37,11 +37,17 @@ def _layer_svgs(master: Path) -> dict[str, str]:
     return groups
 
 
-def _crop_with_origin(image: Image.Image) -> tuple[Image.Image, tuple[int, int]]:
-    bbox = image.getbbox()
-    if not bbox:
-        return image, (0, 0)
-    return image.crop(bbox), (bbox[0], bbox[1])
+def _rasterize_svg_text(source: str) -> Image.Image:
+    try:
+        import cairosvg
+    except ImportError as exc:
+        raise SVGRenderUnavailable("CairoSVG is required for semantic SVG rendering") from exc
+    png = cairosvg.svg2png(
+        bytestring=source.encode("utf-8"),
+        output_width=SOURCE_W,
+        output_height=SOURCE_H,
+    )
+    return Image.open(io.BytesIO(png)).convert("RGBA")
 
 
 def render_semantic_character(
@@ -50,7 +56,7 @@ def render_semantic_character(
     pose: str,
     scale: float = 1.0,
 ) -> Image.Image:
-    """Render a master SVG through its semantic layers and pose transforms."""
+    """Render a master SVG through semantic layers and a character pose."""
     master_path = Path(master)
     groups = _layer_svgs(master_path)
     if not groups:
@@ -63,13 +69,11 @@ def render_semantic_character(
         svg = groups.get(layer_name)
         if not svg:
             continue
-        try:
-            layer = rasterize_svg(io.BytesIO(svg.encode("utf-8")), SOURCE_W, SOURCE_H)
-        except (SVGRenderUnavailable, OSError, ValueError):
+        layer = _rasterize_svg_text(svg)
+        bbox = layer.getbbox()
+        if not bbox:
             continue
-        layer, origin = _crop_with_origin(layer)
-        if not layer.getbbox():
-            continue
+        layer = layer.crop(bbox)
         transform = pose_spec.layers[layer_name]
         if transform.scale != 1.0:
             layer = layer.resize(
@@ -78,9 +82,11 @@ def render_semantic_character(
                 Image.Resampling.LANCZOS,
             )
         if transform.rotation:
-            layer = layer.rotate(transform.rotation, Image.Resampling.BICUBIC, expand=True)
-        # Transform coordinates describe the intended layer center in the
-        # canonical 600x1100 character space, independent of cropped bounds.
+            layer = layer.rotate(
+                transform.rotation,
+                resample=Image.Resampling.BICUBIC,
+                expand=True,
+            )
         px = round(transform.x - layer.width / 2)
         py = round(transform.y - layer.height / 2)
         canvas.alpha_composite(layer, (px, py))
