@@ -8,10 +8,10 @@ class EntryExitCue:
     at: float
     character: str
     action: str
-    position: tuple[float, float] | None = None
+    position: tuple[float,float] | None = None
     duration: float = 0.0
     def __post_init__(self):
-        if str(self.action).strip().lower() not in {"enter", "exit"}: raise ValueError("EntryExitCue.action must be 'enter' or 'exit'")
+        if str(self.action).strip().lower() not in {"enter","exit"}: raise ValueError("EntryExitCue.action must be 'enter' or 'exit'")
         if self.at < 0 or self.duration < 0: raise ValueError("EntryExitCue.at/duration must be non-negative")
         if self.position is not None and len(self.position) != 2: raise ValueError("EntryExitCue.position must contain x and y")
 
@@ -21,27 +21,24 @@ def _smoothstep(a):
 def _lerp(a,b,p):
     p=_smoothstep(p); return (a[0]+(b[0]-a[0])*p,a[1]+(b[1]-a[1])*p)
 
-def resolve_entry_exit(character: str, now: float, base: Mapping[str, tuple[float,float]], cues: tuple[EntryExitCue,...]=()):
+def _default_offscreen(character: str, action: str, authored: tuple[float,float]) -> tuple[float,float]:
+    # With no explicit staging point, enter from the left and exit to the right.
+    return (-180.0, authored[1]) if action == "enter" else (1260.0, authored[1])
+
+def resolve_entry_exit(character: str, now: float, base: Mapping[str,tuple[float,float]], cues: tuple[EntryExitCue,...]=()):
     cid=character.strip().lower(); authored=tuple(map(float,base.get(cid,(540.0,1150.0))))
     current=authored; visible=True
     for cue in sorted((c for c in cues if c.character.strip().lower()==cid),key=lambda c:c.at):
-        target=tuple(map(float,cue.position)) if cue.position is not None else authored
-        if now < cue.at:
-            continue
+        if now < cue.at: continue
         if cue.action == "enter":
-            start=target
+            start=tuple(map(float,cue.position)) if cue.position is not None else _default_offscreen(cid,"enter",authored)
             if cue.duration <= 0 or now >= cue.at+cue.duration: current=authored
             else: current=_lerp(start,authored,(now-cue.at)/cue.duration)
             visible=True
         else:
-            start=current
+            start=current; target=tuple(map(float,cue.position)) if cue.position is not None else _default_offscreen(cid,"exit",authored)
             if cue.duration <= 0 or now >= cue.at+cue.duration: current=target; visible=False
             else: current=_lerp(start,target,(now-cue.at)/cue.duration); visible=True
-    # Explicit future entrance means hidden, at its authored offscreen start.
-    future=next((c for c in sorted(cues,key=lambda c:c.at) if c.character.strip().lower()==cid and c.action=="enter" and c.at>now),None)
-    if future is not None:
-        current=tuple(map(float,future.position)) if future.position is not None else authored
-        visible=False
     return current,visible
 
 def resolve_entry_exit_states(now, base: Mapping[str,tuple[float,float,float]], cues=()):
