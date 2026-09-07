@@ -3,8 +3,26 @@ from pathlib import Path
 import pytest
 
 from engine.cast_scene import CastScene
-from engine.master_cast_renderer import render_master_cast
+from engine.master_cast_renderer import gaze_direction, render_master_cast
 from engine.svg_renderer import SVGRenderUnavailable
+
+
+POSITIONS = {
+    "tunde": (330.0, 1450.0, 1.0),
+    "seyi": (570.0, 1450.0, 1.0),
+    "mama": (810.0, 1450.0, 1.0),
+}
+
+
+def test_gaze_direction_points_toward_target():
+    assert gaze_direction("seyi", "tunde", POSITIONS) == "left"
+    assert gaze_direction("mama", "tunde", POSITIONS) == "left"
+    assert gaze_direction("tunde", "mama", POSITIONS) == "right"
+
+
+def test_camera_focus_stays_centered():
+    assert gaze_direction("seyi", "camera", POSITIONS) == "center"
+    assert gaze_direction("seyi", None, POSITIONS) == "center"
 
 
 def test_master_renderer_uses_scene_positions():
