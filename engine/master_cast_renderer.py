@@ -8,7 +8,7 @@ from typing import Mapping
 from PIL import Image
 
 from .cast_scene import CastScene
-from .gaze import gaze_direction as _gaze_direction
+from .gaze import gaze_direction as _gaze_direction, interaction_strength as _interaction_strength
 from .performance_renderer import apply_performance, performance_for_character
 from .semantic_svg_rig import render_semantic_character
 from .svg_renderer import SVGRenderUnavailable, rasterize_svg
@@ -44,7 +44,7 @@ def _temporal_gaze(focus: str | None, phase: str, motion_progress: float) -> str
 
 
 def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Path = ".", positions: Mapping[str, tuple[float, float, float]] | None = None, character_width: int = 420) -> Image.Image:
-    """Compose canonical artwork with semantic body, face, temporal acting and gaze."""
+    """Compose canonical artwork with semantic body, face, temporal acting and target-aware interaction geometry."""
     canvas = Image.new("RGBA", (W, H), (247, 243, 235, 255))
     state = scene.state_at(frame_time)
     overrides = positions or {}
@@ -66,6 +66,7 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
         performance = performance_for_character(scene, character_id, frame_time)
         focus = _temporal_gaze(performance.focus, performance.phase, performance.motion_progress)
         gaze = gaze_direction(character_id, focus, scene_positions)
+        strength = _interaction_strength(character_id, focus, scene_positions)
         if _has_semantic_layers(resolved.path):
             try:
                 artwork = render_semantic_character(
@@ -78,6 +79,7 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
                     phase=performance.phase,
                     motion_progress=performance.motion_progress,
                     gaze=gaze,
+                    interaction_strength=strength,
                 )
                 artwork = artwork.resize((width, height), Image.Resampling.LANCZOS)
             except (SVGRenderUnavailable, ValueError, OSError):
