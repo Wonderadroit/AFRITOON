@@ -75,3 +75,11 @@ def pose_for_phase(character_id: str, pose: str, phase: str, *, origin_x: float 
     amount = {"anticipation": 0.35, "action": 1.0, "hold": 1.0, "recovery": 0.45}.get(phase, 0.0)
     layers = {name: _interpolate(idle.layers[name], target.layers[name], amount) for name in BASE}
     return CharacterPose(str(character_id).strip().lower(), target.name, layers)
+
+
+def pose_for_motion(character_id: str, pose: str, amount: float, *, origin_x: float = 0, origin_y: float = 0, scale: float = 1.0) -> CharacterPose:
+    """Resolve an authored pose at a continuous idle-to-action blend."""
+    target = pose_for(character_id, pose, origin_x=origin_x, origin_y=origin_y, scale=scale)
+    idle = pose_for(character_id, "idle", origin_x=origin_x, origin_y=origin_y, scale=scale)
+    layers = {name: _interpolate(idle.layers[name], target.layers[name], amount) for name in BASE}
+    return CharacterPose(str(character_id).strip().lower(), target.name, layers)
