@@ -2,6 +2,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from .entrance_exit import EntryExitCue
+from .proximity import conversational_stop_x
 from .story_director import StoryPlan
 
 
@@ -13,6 +14,7 @@ class StoryBlockingCue:
     y: float
     duration: float = 0.0
     target: str | None = None
+    interaction_distance: float = 70.0
 
 
 def _target_id(text: str, available: set[str]) -> str | None:
@@ -24,7 +26,7 @@ def _target_id(text: str, available: set[str]) -> str | None:
 
 
 def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tuple[StoryBlockingCue, ...]:
-    """Create deterministic approach cues from explicit story intent."""
+    """Create deterministic approach cues that end at conversational distance."""
     available = set(positions)
     result: list[StoryBlockingCue] = []
     for beat in plan.beats:
@@ -41,9 +43,8 @@ def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tupl
             continue
         tx, ty = positions[target]
         ax, ay = positions[actor]
-        direction = 1.0 if ax < tx else -1.0
-        stop_x = tx - direction * 70.0
-        result.append(StoryBlockingCue(float(beat.at), actor, float(stop_x), float(ay), 1.0, target))
+        stop_x = conversational_stop_x(ax, tx, distance=70.0)
+        result.append(StoryBlockingCue(float(beat.at), actor, stop_x, float(ay), 1.0, target, 70.0))
     return tuple(result)
 
 
@@ -68,7 +69,6 @@ def entry_exit_cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float
 
 
 def _offscreen_start(position: tuple[float, float], positions: dict[str, tuple[float, float]]) -> tuple[float, float]:
-    """Choose a deterministic side based on the authored cast center."""
     center = sum(x for x, _ in positions.values()) / max(1, len(positions))
     return (-180.0, position[1]) if position[0] >= center else (1260.0, position[1])
 
