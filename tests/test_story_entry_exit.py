@@ -5,7 +5,7 @@ from engine.story_blocking import entry_exit_cues_for
 
 
 def test_story_entry_is_derived_from_explicit_language():
-    plan = build_story_plan(4.0, [StoryBeat(1.0, "Seyi enters", "seyi", "calm")])
+    plan = build_story_plan("Untitled", 4.0, [StoryBeat(1.0, "Seyi enters", "seyi", "calm")])
     cues = entry_exit_cues_for(plan, {"tunde": (330, 1450), "seyi": (570, 1450)})
     assert len(cues) == 1
     assert cues[0].action == "enter"
@@ -14,7 +14,7 @@ def test_story_entry_is_derived_from_explicit_language():
 
 
 def test_story_exit_is_derived_from_explicit_language():
-    plan = build_story_plan(4.0, [StoryBeat(1.0, "Mama leaves", "mama", "calm")])
+    plan = build_story_plan("Untitled", 4.0, [StoryBeat(1.0, "Mama leaves", "mama", "calm")])
     cues = entry_exit_cues_for(plan, {"tunde": (330, 1450), "mama": (810, 1450)})
     assert len(cues) == 1
     assert cues[0].action == "exit"
@@ -22,7 +22,7 @@ def test_story_exit_is_derived_from_explicit_language():
 
 
 def test_cast_scene_story_entry_moves_character_into_frame():
-    plan = build_story_plan(4.0, [StoryBeat(1.0, "Seyi enters", "seyi", "calm")])
+    plan = build_story_plan("Untitled", 4.0, [StoryBeat(1.0, "Seyi enters", "seyi", "calm")])
     scene = CastScene("story_entry", 4.0, [
         spawn("tunde", x=330, y=1450),
         spawn("seyi", x=570, y=1450),
@@ -40,7 +40,7 @@ def test_cast_scene_story_entry_moves_character_into_frame():
 
 
 def test_cast_scene_story_exit_hides_after_walk_out():
-    plan = build_story_plan(4.0, [StoryBeat(1.0, "Mama leaves", "mama", "calm")])
+    plan = build_story_plan("Untitled", 4.0, [StoryBeat(1.0, "Mama leaves", "mama", "calm")])
     scene = CastScene("story_exit", 4.0, [
         spawn("tunde", x=330, y=1450),
         spawn("mama", x=810, y=1450),
@@ -56,7 +56,7 @@ def test_cast_scene_story_exit_hides_after_walk_out():
 
 
 def test_no_story_entry_exit_keeps_existing_visibility():
-    plan = build_story_plan(2.0, [StoryBeat(0.0, "Seyi observes", "seyi", "deadpan")])
+    plan = build_story_plan("Untitled", 2.0, [StoryBeat(0.0, "Seyi observes", "seyi", "deadpan")])
     scene = CastScene("plain_story", 2.0, [
         spawn("seyi", x=570, y=1450, visible=True),
     ], story_plan=plan)
