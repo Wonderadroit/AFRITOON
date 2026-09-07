@@ -19,6 +19,7 @@ class PerformanceState:
     mouth: str
     phase: str = "hold"
     motion_progress: float = 1.0
+    focus: str | None = None
 
 
 def performance_at(
