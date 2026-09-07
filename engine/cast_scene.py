@@ -12,6 +12,7 @@ from .interactions import CharacterCue, interaction
 from .story_director import StoryPlan, story_plan_from_yaml
 from .story_performance import cue_at, cues_for
 from .spatial_blocking import SpatialCue, resolve_positions
+from .story_blocking import cues_for as story_blocking_cues_for
 
 
 @dataclass(frozen=True)
@@ -141,7 +142,14 @@ class CastScene:
                 )
 
         base_positions = {cid: (item.x, item.y, item.scale) for cid, item in states.items()}
-        moved = resolve_positions(now, base_positions, self.spatial_cues)
+        blocking = list(self.spatial_cues)
+        if self.story_plan is not None:
+            story_positions = {cid: (item.x, item.y) for cid, item in states.items()}
+            # Derived story blocking is deliberately lower priority than explicit
+            # blocking: explicit scene staging is the author's final say.
+            derived = story_blocking_cues_for(self.story_plan, story_positions)
+            blocking = list(derived) + blocking
+        moved = resolve_positions(now, base_positions, tuple(blocking))
         for cid, item in states.items():
             x, y, _ = moved[cid]
             states[cid] = CharacterInstance(
