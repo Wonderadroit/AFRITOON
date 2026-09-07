@@ -25,8 +25,23 @@ def _has_semantic_layers(path: Path) -> bool:
         return False
 
 
+def gaze_direction(character: str, focus: str | None, positions: Mapping[str, tuple[float, float, float]] | None = None) -> str:
+    """Resolve a bounded horizontal gaze target from scene positions."""
+    if not focus or focus == "camera":
+        return "center"
+    layout = positions or DEFAULT_POSITIONS
+    if character not in layout or focus not in layout:
+        return "center"
+    self_x = float(layout[character][0])
+    target_x = float(layout[focus][0])
+    delta = target_x - self_x
+    if abs(delta) < 24.0:
+        return "center"
+    return "right" if delta > 0 else "left"
+
+
 def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Path = ".", positions: Mapping[str, tuple[float, float, float]] | None = None, character_width: int = 420) -> Image.Image:
-    """Compose canonical artwork with semantic body, face and temporal acting."""
+    """Compose canonical artwork with semantic body, face, temporal acting and gaze."""
     canvas = Image.new("RGBA", (W, H), (247, 243, 235, 255))
     state = scene.state_at(frame_time)
     overrides = positions or {}
@@ -42,6 +57,7 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
         resolved = resolve_view(repo_root, character_id, instance.view)
         width = max(1, int(character_width * scale)); height = max(1, int(round(width * SOURCE_ASPECT)))
         performance = performance_for_character(scene, character_id, frame_time)
+        gaze = gaze_direction(character_id, performance.focus, overrides or {cid: (item.x, item.y, item.scale) for cid, item in state.characters.items()})
         if _has_semantic_layers(resolved.path):
             try:
                 artwork = render_semantic_character(
@@ -53,6 +69,7 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
                     mouth_name=performance.mouth,
                     phase=performance.phase,
                     motion_progress=performance.motion_progress,
+                    gaze=gaze,
                 )
                 artwork = artwork.resize((width, height), Image.Resampling.LANCZOS)
             except (SVGRenderUnavailable, ValueError, OSError):
