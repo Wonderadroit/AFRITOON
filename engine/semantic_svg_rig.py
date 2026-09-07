@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 
 from .assets import LAYER_NAMES
-from .character_pose import pose_for
+from .character_pose import pose_for_phase
 from .expressions import expression
 from .svg_renderer import SVGRenderUnavailable
 
@@ -22,50 +22,26 @@ def _svg_namespace(tag: str) -> str:
 
 
 def _face_transform(expression_name: str, layer: str, mouth_name: str | None = None) -> str | None:
-    """Return a runtime transform for one authored facial layer."""
     state = expression(expression_name)
     transforms: list[str] = []
-    head_angle = {
-        "neutral": 0.0, "happy": -2.0, "curious": -4.0,
-        "shocked": 2.0, "deadpan": 1.0, "angry": -2.0,
-        "sad": 3.0, "laughing": -3.0, "surprised": 2.0,
-    }[state.name]
+    head_angle = {"neutral": 0.0, "happy": -2.0, "curious": -4.0, "shocked": 2.0, "deadpan": 1.0, "angry": -2.0, "sad": 3.0, "laughing": -3.0, "surprised": 2.0}[state.name]
     face_layers = {"head", "ears", "front_hair", "left_eye", "right_eye", "left_brow", "right_brow", "nose", "mouth"}
     if layer in face_layers and head_angle:
         transforms.append(f"rotate({head_angle} 300 335)")
-
     if layer in {"left_eye", "right_eye"}:
-        eye_scale_y = {
-            "normal": 1.0, "happy": 0.78, "wide": 1.22,
-            "closed": 0.48, "narrow": 0.72, "sad": 0.86,
-        }.get(state.eyes, 1.0)
+        eye_scale_y = {"normal": 1.0, "happy": 0.78, "wide": 1.22, "closed": 0.48, "narrow": 0.72, "sad": 0.86}.get(state.eyes, 1.0)
         transforms.append(f"translate(0 330) scale(1 {eye_scale_y}) translate(0 -330)")
-
     if layer in {"left_brow", "right_brow"}:
-        brow_angle = {
-            "normal": 0.0,
-            "raised": 4.0 if layer == "left_brow" else -4.0,
-            "flat": 0.0,
-            "furrowed": -9.0 if layer == "left_brow" else 9.0,
-            "raised_inner": -5.0 if layer == "left_brow" else 5.0,
-        }.get(state.brows, 0.0)
+        brow_angle = {"normal": 0.0, "raised": 4.0 if layer == "left_brow" else -4.0, "flat": 0.0, "furrowed": -9.0 if layer == "left_brow" else 9.0, "raised_inner": -5.0 if layer == "left_brow" else 5.0}.get(state.brows, 0.0)
         if state.brows == "flat":
             transforms.append("translate(0 272) scale(1 0.35) translate(0 -272)")
         elif brow_angle:
             pivot = "245 270" if layer == "left_brow" else "355 270"
             transforms.append(f"rotate({brow_angle} {pivot})")
-
     if layer == "mouth":
         active_mouth = mouth_name or state.mouth
-        mouth_scale_y = {
-            "closed": 0.20, "smile": 0.72, "small_open": 0.70,
-            "open": 1.18, "flat": 0.18, "tight": 0.28,
-            "sad": 0.70, "wide_smile": 0.95,
-            "talk_o": 1.05, "talk_e": 0.72, "talk_a": 0.90,
-            "talk_m": 0.18, "talk_rest": 0.55,
-        }.get(active_mouth, 1.0)
+        mouth_scale_y = {"closed": 0.20, "smile": 0.72, "small_open": 0.70, "open": 1.18, "flat": 0.18, "tight": 0.28, "sad": 0.70, "wide_smile": 0.95, "talk_o": 1.05, "talk_e": 0.72, "talk_a": 0.90, "talk_m": 0.18, "talk_rest": 0.55}.get(active_mouth, 1.0)
         transforms.append(f"translate(0 435) scale(1 {mouth_scale_y}) translate(0 -435)")
-
     return " ".join(transforms) or None
 
 
@@ -83,12 +59,8 @@ def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str 
         transform = _face_transform(expression_name, layer, mouth_name)
         if transform:
             wrapper_group.set("transform", transform)
-        wrapper_group.set("stroke", "#171717")
-        wrapper_group.set("stroke-width", "12")
-        wrapper_group.set("stroke-linejoin", "round")
-        wrapper_group.set("stroke-linecap", "round")
-        wrapper.append(wrapper_group)
-        groups[layer] = ET.tostring(wrapper, encoding="unicode")
+        wrapper_group.set("stroke", "#171717"); wrapper_group.set("stroke-width", "12"); wrapper_group.set("stroke-linejoin", "round"); wrapper_group.set("stroke-linecap", "round")
+        wrapper.append(wrapper_group); groups[layer] = ET.tostring(wrapper, encoding="unicode")
     return groups
 
 
@@ -121,23 +93,15 @@ def _transform_layer(layer: Image.Image, *, target_anchor: tuple[float, float], 
     return cropped, (round(target_anchor[0] - cropped.width / 2), round(target_anchor[1] - cropped.height / 2))
 
 
-def render_semantic_character(
-    master: str | Path,
-    character_id: str,
-    pose: str,
-    scale: float = 1.0,
-    expression_name: str = "neutral",
-    mouth_name: str | None = None,
-) -> Image.Image:
-    """Render canonical artwork with body pose plus runtime facial performance."""
+def render_semantic_character(master: str | Path, character_id: str, pose: str, scale: float = 1.0, expression_name: str = "neutral", mouth_name: str | None = None, phase: str = "hold") -> Image.Image:
+    """Render canonical artwork with body pose, facial performance and acting phase."""
     master_path = Path(master)
     groups = _layer_svgs(master_path, expression_name=expression_name, mouth_name=mouth_name)
     if not groups:
         raise ValueError(f"Master artwork has no semantic layers: {master_path}")
-
     canvas = Image.new("RGBA", (SOURCE_W, SOURCE_H), (0, 0, 0, 0))
-    pose_spec = pose_for(character_id, pose, scale=scale)
-    canonical_pose = pose_for(character_id, "idle", scale=1.0)
+    pose_spec = pose_for_phase(character_id, pose, phase, scale=scale)
+    canonical_pose = pose_for_phase(character_id, "idle", "hold", scale=1.0)
     for layer_name in LAYER_NAMES:
         svg = groups.get(layer_name)
         if not svg:
@@ -147,16 +111,9 @@ def render_semantic_character(
         if prepared is None:
             continue
         _, source_x, source_y = prepared
-        current = pose_spec.layers[layer_name]
-        canonical = canonical_pose.layers[layer_name]
-        target_x = source_x + (current.x - canonical.x)
-        target_y = source_y + (current.y - canonical.y)
-        transformed, position = _transform_layer(
-            layer,
-            target_anchor=(target_x, target_y),
-            rotation=current.rotation,
-            scale=current.scale,
-        )
+        current = pose_spec.layers[layer_name]; canonical = canonical_pose.layers[layer_name]
+        target_x = source_x + (current.x - canonical.x); target_y = source_y + (current.y - canonical.y)
+        transformed, position = _transform_layer(layer, target_anchor=(target_x, target_y), rotation=current.rotation, scale=current.scale)
         if transformed.getbbox():
             canvas.alpha_composite(transformed, position)
     return canvas
