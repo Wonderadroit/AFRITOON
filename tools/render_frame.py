@@ -4,6 +4,13 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
+
+# Make direct execution from the repository's tools/ directory behave like
+# execution from the repository root (e.g. ``python tools/render_frame.py``).
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from engine.cast_scene import CastScene
 from engine.master_cast_renderer import render_master_cast
