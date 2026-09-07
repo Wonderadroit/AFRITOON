@@ -137,19 +137,19 @@ class CastScene:
         return False
 
     @staticmethod
-    def _has_future_entry(character_id: str, now: float, cues: Iterable[EntryExitCue]) -> bool:
-        """Return whether an explicit entrance is scheduled after ``now``."""
+    def _future_entry(character_id: str, now: float, cues: Iterable[EntryExitCue]) -> EntryExitCue | None:
+        """Return the next scheduled entrance for a character, if any."""
         cid = character_id.strip().lower()
-        return any(
-            cue.character.strip().lower() == cid and cue.action == "enter" and cue.at > now
-            for cue in cues
-        )
+        candidates = [
+            cue for cue in cues
+            if cue.character.strip().lower() == cid and cue.action == "enter" and cue.at > now
+        ]
+        return min(candidates, key=lambda cue: cue.at) if candidates else None
 
     def state_at(self, t: float) -> CastState:
         now = max(0.0, min(float(t), self.duration))
         states = dict(self.characters)
 
-        # Interaction cues establish the legacy/base performance timeline.
         try:
             cues = interaction(self.name).cues
         except ValueError:
@@ -161,15 +161,16 @@ class CastScene:
                 states[character_id] = states[character_id].with_state(
                     pose=cue.pose, expression=cue.expression, visible=cue.visible)
 
-        # Story performance is the higher-level authored performance layer.
-        # This lets contextual reactions affect listeners without changing the
-        # underlying interaction/scene contract.
+        # Story performance is layered on top. A calm beat is neutral rather
+        # than an instruction to erase an existing authored expression.
         if self.story_plan is not None:
             for character_id in self.characters:
                 cue = cue_at(cues_for(self.story_plan, character_id), now)
                 if cue is not None:
                     states[character_id] = states[character_id].with_state(
-                        pose=cue.action, expression=cue.expression)
+                        pose=cue.action,
+                        expression=cue.expression if cue.expression != "neutral" else states[character_id].expression,
+                    )
 
         base_positions = {cid: (item.x, item.y, item.scale) for cid, item in states.items()}
         blocking = list(self.spatial_cues)
@@ -186,12 +187,16 @@ class CastScene:
             ex, ey, _, entry_visible = entry_states[cid]
             has_entry_exit = any(cue.character.strip().lower() == cid for cue in entry_exit)
             entry_active = self._entry_exit_is_active(cid, now, entry_exit)
-            future_entry = self._has_future_entry(cid, now, entry_exit)
+            future_entry = self._future_entry(cid, now, entry_exit)
 
-            if has_entry_exit and future_entry:
-                # A scheduled entrance owns pre-entry visibility at scene level,
-                # while the low-level resolver continues to expose authored state.
-                x, y, visible = item.x, item.y, False
+            if has_entry_exit and future_entry is not None:
+                # Keep the resolver's authored fallback intact, but stage a
+                # future entrant at its real offscreen start at scene level.
+                if future_entry.position is not None:
+                    x, y = future_entry.position
+                else:
+                    x, y = (-180.0, item.y)
+                visible = False
             elif has_entry_exit and (entry_active or not entry_visible):
                 x, y, visible = ex, ey, entry_visible
             elif has_entry_exit:
