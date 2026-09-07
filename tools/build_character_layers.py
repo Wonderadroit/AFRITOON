@@ -1,22 +1,41 @@
-"""Build deterministic semantic SVG/PNG layers from character masters."""
+"""Build deterministic semantic SVG/PNG layers from character masters.
+
+The character masters are the source of truth.  Layer extraction therefore
+uses each master's ``data-layer`` names instead of brittle child indexes.
+"""
 
 from __future__ import annotations
 
 import argparse
 import copy
 import xml.etree.ElementTree as ET
-from io import BytesIO
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 NS = "http://www.w3.org/2000/svg"
 ET.register_namespace("", NS)
-LAYERS = ("back_hair", "legs", "shoes", "torso", "left_arm", "right_arm", "neck", "head", "ears", "front_hair", "left_eye", "right_eye", "left_brow", "right_brow", "nose", "mouth")
-MAP = {
-    "tunde": {"back_hair": [], "legs": [0], "shoes": [1, 2], "torso": [3, 4], "left_arm": [5], "right_arm": [6], "neck": [7], "head": [10], "ears": [8, 9], "front_hair": [11], "left_eye": [12, 14], "right_eye": [13, 15], "left_brow": [16], "right_brow": [17], "nose": [18], "mouth": [19]},
-    "seyi": {"back_hair": [], "legs": [0], "shoes": [1, 2], "torso": [3], "left_arm": [], "right_arm": [], "neck": [4], "head": [7], "ears": [5, 6], "front_hair": [8], "left_eye": [9], "right_eye": [10], "left_brow": [11], "right_brow": [11], "nose": [12], "mouth": [13]},
-    "mama": {"back_hair": [], "legs": [0], "shoes": [1, 2], "torso": [3], "left_arm": [18], "right_arm": [19], "neck": [4], "head": [7], "ears": [5, 6], "front_hair": [8, 9], "left_eye": [10], "right_eye": [11], "left_brow": [12], "right_brow": [12], "nose": [13], "mouth": [14]},
-}
+
+# This is the runtime contract. A master may intentionally omit a layer (for
+# example back_hair when the hairstyle is fully represented by front_hair).
+LAYERS = (
+    "back_hair",
+    "legs",
+    "shoes",
+    "torso",
+    "left_arm",
+    "right_arm",
+    "neck",
+    "head",
+    "ears",
+    "front_hair",
+    "left_eye",
+    "right_eye",
+    "left_brow",
+    "right_brow",
+    "nose",
+    "mouth",
+)
+CHARACTERS = ("tunde", "seyi", "mama")
 
 
 def children(master: Path):
@@ -27,8 +46,36 @@ def children(master: Path):
     return root, list(groups[0])
 
 
-def write_layer(root, nodes, target: Path):
-    out = ET.Element(f"{{{NS}}}svg", {"viewBox": root.attrib.get("viewBox", "0 0 600 1100")})
+def semantic_nodes(nodes: list[ET.Element], cid: str) -> dict[str, list[ET.Element]]:
+    """Return master drawing groups keyed by their semantic data-layer name."""
+    found: dict[str, list[ET.Element]] = {}
+    unknown: list[str] = []
+
+    for node in nodes:
+        layer = node.attrib.get("data-layer")
+        if not layer:
+            # The master may contain an unlabelled structural group, but all
+            # artwork groups in the current masters are semantic layers.
+            continue
+        if layer in found:
+            raise ValueError(f"{cid} master defines duplicate data-layer '{layer}'")
+        found[layer] = [node]
+
+    unknown = sorted(set(found) - set(LAYERS))
+    if unknown:
+        raise ValueError(f"{cid} master defines unknown data-layer(s): {', '.join(unknown)}")
+
+    return found
+
+
+def write_layer(root: ET.Element, nodes: list[ET.Element], target: Path):
+    out = ET.Element(
+        f"{{{NS}}}svg",
+        {
+            "viewBox": root.attrib.get("viewBox", "0 0 600 1100"),
+            "xmlns": NS,
+        },
+    )
     group = ET.SubElement(out, f"{{{NS}}}g")
     for node in nodes:
         group.append(copy.deepcopy(node))
@@ -46,20 +93,20 @@ def write_png(svg_path: Path, png_path: Path) -> None:
 
 
 def build(cid: str, png: bool = False) -> None:
+    if cid not in CHARACTERS:
+        raise ValueError(f"Unknown character: {cid}")
+
     master = ROOT / "assets" / "characters" / cid / "art" / f"{cid}_front.svg"
     root, nodes = children(master)
-    mapping = MAP[cid]
-    referenced = sorted({index for indexes in mapping.values() for index in indexes})
-    invalid = [index for index in referenced if index < 0 or index >= len(nodes)]
-    if invalid:
-        raise ValueError(f"{cid} layer map references invalid indexes {invalid}; source has {len(nodes)} elements")
-    if set(mapping) != set(LAYERS):
-        raise ValueError(f"{cid} does not define exactly the 16-layer contract")
+    semantic = semantic_nodes(nodes, cid)
 
     output_root = ROOT / "assets" / "characters" / cid / "layers" / "front"
     for layer in LAYERS:
+        # Empty semantic layers are valid: they preserve the fixed runtime
+        # contract without forcing artwork to invent geometry that is not
+        # present in the canonical master.
         svg_path = output_root / f"{layer}.svg"
-        write_layer(root, [nodes[index] for index in mapping[layer]], svg_path)
+        write_layer(root, semantic.get(layer, []), svg_path)
         if png:
             write_png(svg_path, output_root / f"{layer}.png")
 
@@ -71,10 +118,10 @@ def build(cid: str, png: bool = False) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build AFRITOON front-view character layers")
-    parser.add_argument("--character", choices=("tunde", "seyi", "mama", "all"), default="all")
+    parser.add_argument("--character", choices=(*CHARACTERS, "all"), default="all")
     parser.add_argument("--png", action="store_true", help="Also rasterize layers to PNG")
     args = parser.parse_args()
-    characters = ("tunde", "seyi", "mama") if args.character == "all" else (args.character,)
+    characters = CHARACTERS if args.character == "all" else (args.character,)
     for cid in characters:
         build(cid, png=args.png)
     return 0
