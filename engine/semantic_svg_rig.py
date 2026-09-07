@@ -17,6 +17,11 @@ SOURCE_W, SOURCE_H = 600, 1100
 SVG_NS = "http://www.w3.org/2000/svg"
 
 
+def _svg_namespace(tag: str) -> str:
+    """Return the namespace-local part of an ElementTree tag."""
+    return tag.rsplit("}", 1)[-1]
+
+
 def _interaction_geometry(gaze: str, phase: str, motion_progress: float, strength: float = 1.0) -> tuple[float, float]:
     """Return bounded head/body orientation caused by a target-aware reaction."""
     direction = {"left": -1.0, "right": 1.0, "center": 0.0}.get(gaze, 0.0)
