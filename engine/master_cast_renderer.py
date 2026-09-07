@@ -44,7 +44,16 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
         performance = performance_for_character(scene, character_id, frame_time)
         if _has_semantic_layers(resolved.path):
             try:
-                artwork = render_semantic_character(resolved.path, character_id, performance.pose, scale=1.0, expression_name=performance.expression, mouth_name=performance.mouth, phase=performance.phase)
+                artwork = render_semantic_character(
+                    resolved.path,
+                    character_id,
+                    performance.pose,
+                    scale=1.0,
+                    expression_name=performance.expression,
+                    mouth_name=performance.mouth,
+                    phase=performance.phase,
+                    motion_progress=performance.motion_progress,
+                )
                 artwork = artwork.resize((width, height), Image.Resampling.LANCZOS)
             except (SVGRenderUnavailable, ValueError, OSError):
                 artwork = rasterize_svg(resolved.path, width, height)
