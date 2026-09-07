@@ -48,6 +48,21 @@ INTERACTIONS = {
             CharacterCue(4.5, "mama", "look_at_camera", "deadpan"),
         ),
     ),
+    "nepa_panic": Interaction(
+        name="nepa_panic",
+        cues=(
+            CharacterCue(0.0, "tunde", "talk", "happy"),
+            CharacterCue(3.6, "tunde", "idle", "happy"),
+            CharacterCue(7.0, "tunde", "shock", "shocked"),
+            CharacterCue(9.4, "tunde", "check_pocket", "worried"),
+            CharacterCue(12.8, "seyi", "look", "deadpan"),
+            CharacterCue(14.5, "tunde", "talk", "shocked"),
+            CharacterCue(18.0, "mama", "stand", "neutral"),
+            CharacterCue(19.8, "tunde", "freeze", "shocked"),
+            CharacterCue(21.0, "mama", "angry", "angry"),
+            CharacterCue(22.8, "seyi", "look_at_camera", "deadpan"),
+        ),
+    ),
 }
 
 
