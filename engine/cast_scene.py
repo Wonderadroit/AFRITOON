@@ -121,6 +121,20 @@ class CastScene:
         return cls(interaction_name or source.stem, duration, instances, dialogue, story_plan,
                    spatial_cues, entry_exit_cues)
 
+    def _entry_exit_is_active(self, character_id: str, now: float) -> bool:
+        """Return whether an entrance/exit currently owns the character's position."""
+        cid = character_id.strip().lower()
+        for cue in self.entry_exit_cues:
+            if cue.character.strip().lower() != cid:
+                continue
+            start = float(cue.at)
+            end = start + max(0.0, float(cue.duration))
+            if start <= now < end:
+                return True
+            if cue.action == "exit" and now >= end:
+                return True
+        return False
+
     def state_at(self, t: float) -> CastState:
         now = max(0.0, min(float(t), self.duration))
         states = dict(self.characters)
@@ -147,19 +161,27 @@ class CastScene:
         if self.story_plan is not None:
             story_positions = {cid: (item.x, item.y) for cid, item in states.items()}
             blocking = list(story_blocking_cues_for(self.story_plan, story_positions)) + blocking
-            # Story-derived entrances/exits are lower priority than explicit YAML cues.
             entry_exit = list(story_entry_exit_cues_for(self.story_plan, story_positions)) + entry_exit
 
         moved = resolve_positions(now, base_positions, tuple(blocking))
         entry_states = resolve_entry_exit_states(now, base_positions, tuple(entry_exit))
         for cid, item in states.items():
-            x, y, _ = moved[cid]
-            ex, ey, _, blocking_visible = entry_states[cid]
+            moved_x, moved_y, _ = moved[cid]
+            ex, ey, _, entry_visible = entry_states[cid]
             has_entry_exit = any(cue.character.strip().lower() == cid for cue in entry_exit)
-            if has_entry_exit:
-                x, y, visible = ex, ey, blocking_visible
+            entry_active = self._entry_exit_is_active(cid, now)
+
+            # Story-derived cues participate in the same timeline as explicit cues.
+            # While entering/exiting, the entrance/exit system owns the position.
+            # Once an entrance completes, normal spatial blocking may take over;
+            # after an exit completes, the character remains off-frame and hidden.
+            if has_entry_exit and (entry_active or not entry_visible):
+                x, y, visible = ex, ey, entry_visible
+            elif has_entry_exit:
+                x, y, visible = moved_x, moved_y, entry_visible
             else:
-                visible = item.visible
+                x, y, visible = moved_x, moved_y, item.visible
+
             states[cid] = CharacterInstance(
                 definition=item.definition, x=x, y=y, scale=item.scale,
                 view=item.view, pose=item.pose, expression=item.expression, visible=visible)
