@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1100">
-<g stroke="#171717" stroke-width="12" stroke-linejoin="round" stroke-linecap="round">
-<g data-layer="legs"><path fill="#5a4538" d="M205 735 Q300 700 395 735 L440 1015 L160 1015Z"/></g>
-<g data-layer="shoes"><path fill="#f0dfc8" d="M155 995 Q205 975 255 1000 L255 1040 L145 1040Z"/><path fill="#f0dfc8" d="M345 1000 Q395 975 445 995 L455 1040 L345 1040Z"/></g>
-<g data-layer="torso"><path fill="#d9a9b7" d="M205 505 Q300 470 395 505 L430 755 Q300 805 170 755Z"/></g>
-<g data-layer="neck"><path fill="#8b5a3c" d="M270 465 L270 530 Q300 550 330 530 L330 465Z"/></g>
-<g data-layer="ears"><ellipse fill="#8b5a3c" cx="175" cy="335" rx="38" ry="55"/><ellipse fill="#8b5a3c" cx="425" cy="335" rx="38" ry="55"/></g>
-<g data-layer="head"><ellipse fill="#8b5a3c" cx="300" cy="335" rx="160" ry="190"/></g>
-<g data-layer="front_hair"><path fill="#6f4a78" d="M145 300 Q150 105 300 90 Q450 105 455 300 L415 250 Q365 195 300 195 Q235 195 185 250Z"/><path fill="#6f4a78" d="M170 185 Q300 35 430 185 Q405 235 375 245 Q300 205 225 245 Q195 235 170 185Z"/></g>
-<g data-layer="left_eye"><ellipse fill="#fff" cx="245" cy="330" rx="34" ry="40"/><circle fill="#171717" cx="250" cy="336" r="12"/></g>
-<g data-layer="right_eye"><ellipse fill="#fff" cx="355" cy="330" rx="34" ry="40"/><circle fill="#171717" cx="360" cy="336" r="12"/></g>
-<g data-layer="left_brow"><path fill="none" d="M205 275 Q245 245 275 270"/></g>
-<g data-layer="right_brow"><path fill="none" d="M325 270 Q355 245 395 275"/></g>
-<g data-layer="nose"><path fill="none" d="M300 340 L288 395 Q300 405 315 395"/></g>
-<g data-layer="mouth"><path fill="none" d="M265 435 Q300 420 335 435"/></g>
-<g data-layer="left_arm"><path fill="#8b5a3c" d="M205 545 Q145 585 150 690 Q155 725 185 720 L225 650Z"/></g>
-<g data-layer="right_arm"><path fill="#8b5a3c" d="M395 545 Q455 585 450 690 Q445 725 415 720 L375 650Z"/></g>
+<g stroke="#171717" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+<g data-layer="legs"><path fill="#5a4538" d="M188 742 Q300 708 412 742 L442 1010 L158 1010Z"/><path fill="none" stroke-width="7" d="M190 825 Q300 842 410 825"/></g>
+<g data-layer="shoes"><path fill="#f0dfc8" d="M150 988 Q198 973 254 997 L258 1038 L140 1038 Q138 1009 150 988Z"/><path fill="#f0dfc8" d="M342 997 Q398 973 450 990 Q461 1004 458 1038 L342 1038Z"/><path fill="none" stroke-width="6" d="M158 1008 L238 1008 M358 1008 L438 1008"/></g>
+<g data-layer="torso"><path fill="#d9a9b7" d="M202 508 Q300 470 398 508 Q425 608 436 760 Q300 806 164 760 Q175 608 202 508Z"/><path fill="none" stroke-width="7" d="M214 610 Q300 640 386 610 M208 675 Q300 700 392 675"/></g>
+<g data-layer="left_arm"><path fill="#8b5a3c" d="M205 540 Q157 565 145 640 Q138 685 148 710 Q159 730 183 716 Q198 705 203 676 L231 588Z"/><path fill="#8b5a3c" d="M149 700 Q133 708 140 723 Q152 733 168 718"/></g>
+<g data-layer="right_arm"><path fill="#8b5a3c" d="M395 540 Q443 565 455 640 Q462 685 452 710 Q441 730 417 716 Q402 705 397 676 L369 588Z"/><path fill="#8b5a3c" d="M451 700 Q467 708 460 723 Q448 733 432 718"/></g>
+<g data-layer="neck"><path fill="#8b5a3c" d="M267 460 L267 525 Q300 550 333 525 L333 460Z"/></g>
+<g data-layer="ears"><path fill="#8b5a3c" d="M154 326 Q143 278 176 273 Q202 277 205 326 Q202 372 177 383 Q151 374 154 326Z"/><path fill="#8b5a3c" d="M446 326 Q457 278 424 273 Q398 277 395 326 Q398 372 423 383 Q449 374 446 326Z"/><path fill="none" stroke-width="6" d="M171 320 Q159 335 176 350 M429 320 Q441 335 424 350"/></g>
+<g data-layer="head"><path fill="#8b5a3c" d="M154 322 Q157 186 300 150 Q443 186 446 322 Q442 435 350 482 Q300 508 250 482 Q158 435 154 322Z"/><path fill="none" stroke="#a86f4d" stroke-width="6" d="M185 400 Q201 430 226 446 M415 400 Q399 430 374 446"/></g>
+<g data-layer="front_hair"><path fill="#6f4a78" d="M142 292 Q145 150 218 103 Q300 52 382 103 Q455 150 458 292 L425 250 Q390 202 350 184 Q300 162 250 184 Q210 202 175 250Z"/><path fill="#6f4a78" d="M150 174 Q205 72 300 62 Q395 72 450 174 Q420 201 390 214 Q300 160 210 214 Q180 201 150 174Z"/><path fill="none" stroke="#8d6b95" stroke-width="8" d="M205 145 Q300 91 395 145"/></g>
+<g data-layer="left_eye"><path fill="#fff" d="M204 326 Q244 296 280 325 Q275 365 239 369 Q208 362 204 326Z"/><ellipse fill="#171717" cx="251" cy="334" rx="11" ry="14"/></g>
+<g data-layer="right_eye"><path fill="#fff" d="M396 326 Q356 296 320 325 Q325 365 361 369 Q392 362 396 326Z"/><ellipse fill="#171717" cx="349" cy="334" rx="11" ry="14"/></g>
+<g data-layer="left_brow"><path fill="none" stroke-width="12" d="M204 274 Q244 242 280 268"/></g>
+<g data-layer="right_brow"><path fill="none" stroke-width="12" d="M396 274 Q356 242 320 268"/></g>
+<g data-layer="nose"><path fill="none" stroke-width="8" d="M300 338 L284 397 Q300 408 319 397"/><path fill="none" stroke-width="5" d="M286 401 Q300 407 316 401"/></g>
+<g data-layer="mouth"><path fill="none" stroke-width="8" d="M263 432 Q300 418 337 432"/><path fill="none" stroke-width="5" d="M274 447 Q300 453 326 447"/></g>
 </g>
 </svg>
