@@ -68,7 +68,11 @@ class CastScene:
             if len(position) != 2:
                 raise ValueError(f"Invalid position for {cid}")
             instances.append(DEFAULT_LIBRARY.spawn(
-                cid, x=float(position[0]), y=float(position[1]), scale=float(item.get("scale", 1.0))
+                cid,
+                x=float(position[0]),
+                y=float(position[1]),
+                scale=float(item.get("scale", 1.0)),
+                visible=bool(item.get("visible", True)),
             ))
         return cls(interaction_name or source.stem, duration, instances, dialogue)
 
@@ -83,7 +87,12 @@ class CastScene:
             applicable = [c for c in cues if c.character == character_id and c.time <= now]
             if applicable:
                 cue = max(applicable, key=lambda item: item.time)
-                states[character_id] = states[character_id].with_state(pose=cue.pose, expression=cue.expression)
+                visibility = cue.visible
+                states[character_id] = states[character_id].with_state(
+                    pose=cue.pose,
+                    expression=cue.expression,
+                    visible=visibility,
+                )
         return CastState(now, states)
 
     def cues(self) -> Tuple[CharacterCue, ...]:
