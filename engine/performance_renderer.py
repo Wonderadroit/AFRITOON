@@ -8,6 +8,7 @@ import math
 from PIL import Image, ImageDraw
 
 from .acting import acting_expression
+from .acting_timing import acting_phase
 from .cast_scene import CastScene
 from .mouth_timing import mouth_cues
 from .performance import PerformanceState
@@ -145,6 +146,23 @@ def apply_performance(image: Image.Image, state: PerformanceState, character: st
     return image
 
 
+def _action_start_at(scene: CastScene, character: str, frame_time: float, action: str) -> float | None:
+    """Find the latest source cue that produced the currently visible action."""
+    candidates: list[float] = []
+
+    for cue in scene.cues():
+        if cue.character == character and cue.time <= frame_time and cue.pose == action:
+            candidates.append(float(cue.time))
+
+    if scene.story_plan is not None:
+        from .story_performance import cues_for
+        for cue in cues_for(scene.story_plan, character):
+            if cue.at <= frame_time and cue.action == action:
+                candidates.append(float(cue.at))
+
+    return max(candidates) if candidates else None
+
+
 def performance_for_character(scene: CastScene, character: str, frame_time: float) -> PerformanceState:
     """Resolve visible performance from canonical scene state + dialogue."""
     state = scene.state_at(frame_time)
@@ -161,9 +179,12 @@ def performance_for_character(scene: CastScene, character: str, frame_time: floa
             active = cue.state.name
             break
     resolved_expression = acting_expression(character, instance.pose, instance.expression)
+    start = _action_start_at(scene, character, frame_time, instance.pose)
+    phase = acting_phase(character, instance.pose, frame_time - start) if start is not None else "hold"
     return PerformanceState(
         pose=instance.pose,
         action=instance.pose,
         expression=resolved_expression,
         mouth=active,
+        phase=phase,
     )
