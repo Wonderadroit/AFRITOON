@@ -21,7 +21,7 @@ def _svg_namespace(tag: str) -> str:
     return tag.split("}", 1)[-1]
 
 
-def _face_transform(expression_name: str, layer: str, mouth_name: str | None = None) -> str | None:
+def _face_transform(expression_name: str, layer: str, mouth_name: str | None = None, gaze: str = "center") -> str | None:
     state = expression(expression_name)
     transforms: list[str] = []
     head_angle = {"neutral": 0.0, "happy": -2.0, "curious": -4.0, "shocked": 2.0, "deadpan": 1.0, "angry": -2.0, "sad": 3.0, "laughing": -3.0, "surprised": 2.0}[state.name]
@@ -31,6 +31,9 @@ def _face_transform(expression_name: str, layer: str, mouth_name: str | None = N
     if layer in {"left_eye", "right_eye"}:
         eye_scale_y = {"normal": 1.0, "happy": 0.78, "wide": 1.22, "closed": 0.48, "narrow": 0.72, "sad": 0.86}.get(state.eyes, 1.0)
         transforms.append(f"translate(0 330) scale(1 {eye_scale_y}) translate(0 -330)")
+        gaze_shift = {"left": -9.0, "right": 9.0, "center": 0.0}.get(gaze, 0.0)
+        if gaze_shift:
+            transforms.append(f"translate({gaze_shift} 0)")
     if layer in {"left_brow", "right_brow"}:
         brow_angle = {"normal": 0.0, "raised": 4.0 if layer == "left_brow" else -4.0, "flat": 0.0, "furrowed": -9.0 if layer == "left_brow" else 9.0, "raised_inner": -5.0 if layer == "left_brow" else 5.0}.get(state.brows, 0.0)
         if state.brows == "flat":
@@ -45,7 +48,7 @@ def _face_transform(expression_name: str, layer: str, mouth_name: str | None = N
     return " ".join(transforms) or None
 
 
-def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str | None = None) -> dict[str, str]:
+def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str | None = None, gaze: str = "center") -> dict[str, str]:
     root = ET.fromstring(master.read_text(encoding="utf-8"))
     groups: dict[str, str] = {}
     for node in root.iter():
@@ -56,7 +59,7 @@ def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str 
             continue
         wrapper = ET.Element(f"{{{SVG_NS}}}svg", {"viewBox": f"0 0 {SOURCE_W} {SOURCE_H}"})
         wrapper_group = ET.fromstring(ET.tostring(node, encoding="unicode"))
-        transform = _face_transform(expression_name, layer, mouth_name)
+        transform = _face_transform(expression_name, layer, mouth_name, gaze)
         if transform:
             wrapper_group.set("transform", transform)
         wrapper_group.set("stroke", "#171717")
@@ -97,10 +100,10 @@ def _transform_layer(layer: Image.Image, *, target_anchor: tuple[float, float], 
     return cropped, (round(target_anchor[0] - cropped.width / 2), round(target_anchor[1] - cropped.height / 2))
 
 
-def render_semantic_character(master: str | Path, character_id: str, pose: str, scale: float = 1.0, expression_name: str = "neutral", mouth_name: str | None = None, phase: str = "hold", motion_progress: float | None = None) -> Image.Image:
-    """Render canonical artwork with body pose, facial performance and motion."""
+def render_semantic_character(master: str | Path, character_id: str, pose: str, scale: float = 1.0, expression_name: str = "neutral", mouth_name: str | None = None, phase: str = "hold", motion_progress: float | None = None, gaze: str = "center") -> Image.Image:
+    """Render canonical artwork with body pose, facial performance and target-aware gaze."""
     master_path = Path(master)
-    groups = _layer_svgs(master_path, expression_name=expression_name, mouth_name=mouth_name)
+    groups = _layer_svgs(master_path, expression_name=expression_name, mouth_name=mouth_name, gaze=gaze)
     if not groups:
         raise ValueError(f"Master artwork has no semantic layers: {master_path}")
     canvas = Image.new("RGBA", (SOURCE_W, SOURCE_H), (0, 0, 0, 0))
