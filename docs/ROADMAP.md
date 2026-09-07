@@ -25,6 +25,23 @@ ITANRA is built to prove that a specialized storytelling engine can turn relatab
 - Dialogue-driven mouth timing
 - Camera reactions
 
+## Phase 2.5 — Visual production gate
+
+The first full NEPA render exposed a critical gap: correct story behavior is not enough if the final animation still looks like a rough AI prototype.
+
+- Production-grade canonical character artwork
+- Distinct silhouettes and clothing language
+- Controlled line weight and clean vector edges
+- Reusable illustrated environments
+- Story-driven lighting changes
+- Contact shadows and depth cues
+- Stronger vertical composition
+- Semantic SVG rasterization cache
+- Visual regression tests
+- Human visual review before production approval
+
+**Gate:** a scene does not advance to production merely because automated tests pass. The rendered video must also look intentionally designed, consistent and readable at phone size.
+
 ## Phase 3 — Story intelligence
 
 - Story beats
@@ -33,13 +50,16 @@ ITANRA is built to prove that a specialized storytelling engine can turn relatab
 - Dialogue intent
 - Scene/camera intent
 - Reusable comedy and storytelling patterns
+- LLM-assisted story interpretation without replacing deterministic ITANRA state
 
 ## Phase 4 — Production loop
 
 ```text
 IDEA
  ↓
-STORY
+AI STORY INTERPRETATION
+ ↓
+ITANRA STORY BRAIN
  ↓
 SCENE
  ↓
@@ -49,7 +69,7 @@ VOICE
  ↓
 RENDER
  ↓
-WATCH
+VISUAL REVIEW
  ↓
 IMPROVE
  ↓
