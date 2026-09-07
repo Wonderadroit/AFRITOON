@@ -35,7 +35,9 @@ class ActingTiming:
 
     @property
     def total(self) -> float:
-        return self.anticipation + self.action + self.hold + self.recovery
+        # Phase constants are decimal authoring values. Normalize the tiny
+        # binary floating-point residue so timing comparisons remain stable.
+        return round(self.anticipation + self.action + self.hold + self.recovery, 10)
 
 
 CHARACTER_TIMING: dict[str, dict[str, ActingTiming]] = {
@@ -99,7 +101,6 @@ def motion_curve(character: str, phase: str, progress: float) -> float:
     style = MOTION_CURVES.get(str(character).strip().lower(), "smooth")
     if phase == "action":
         if style == "snap":
-            # Fast acceleration followed by a short settle into the hold.
             return ease_out(t)
         if style == "deliberate":
             return smoothstep(t)
@@ -127,19 +128,13 @@ def acting_phase(character: str, action: str, elapsed: float) -> str:
 
 
 def acting_motion(character: str, action: str, elapsed: float) -> tuple[str, float, float]:
-    """Return ``(phase, phase_progress, pose_amount)`` for a timed action.
-
-    ``pose_amount`` is the continuous blend from canonical idle (0) to the
-    authored action (1). It creates actual travel through the pose rather than
-    swapping between static phase snapshots.
-    """
+    """Return ``(phase, phase_progress, pose_amount)`` for a timed action."""
     timing = timing_for(character, action)
     t = max(0.0, float(elapsed))
 
     if t < timing.anticipation and timing.anticipation > 0:
         phase = "anticipation"
         progress = t / timing.anticipation
-        # A small pre-hit movement; the renderer still uses authored layers.
         amount = 0.15 * motion_curve(character, phase, progress)
         return phase, progress, amount
 
