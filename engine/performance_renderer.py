@@ -74,8 +74,11 @@ def _conversation_partner(scene: CastScene, character: str, frame_time: float) -
     line = scene.dialogue_at(frame_time)
     if line is None:
         return None
-    speaker = line.character.strip().lower()
     state = scene.state_at(frame_time)
+    actor = state.characters.get(character)
+    if actor is None or not actor.visible:
+        return None
+    speaker = line.character.strip().lower()
     if speaker != character:
         speaker_state = state.characters.get(speaker)
         return speaker if speaker_state is not None and speaker_state.visible else None
@@ -101,9 +104,6 @@ def _listener_state(scene: CastScene, character: str, frame_time: float, pose: s
     stale = start is not None and frame_time - start >= timing_for(character, pose).total
     passive = pose in {"idle", "stand", "talk", "look", "turn", "freeze"}
 
-    # Once an authored reaction has finished, the actor settles into listening.
-    # Preserve a strong emotional state (shock/anger/sadness) rather than
-    # replacing it with a generic neutral face.
     if stale or passive:
         if "look" in CHARACTER_MOTION.get(character, {}):
             pose = "look"
