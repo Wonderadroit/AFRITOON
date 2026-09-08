@@ -17,7 +17,7 @@ def test_distance_and_zone_use_current_scene_geometry():
     assert interaction_zone("seyi", "tunde", positions) == "close"
 
 
-def test_story_approach_stops_at_conversational_distance():
+def test_story_approach_stops_at_natural_conversational_distance():
     plan = build_story_plan(
         "Conversation", 5, [StoryBeat(2, "Seyi approaches Tunde", "seyi", "calm", "talk to Tunde")]
     )
@@ -25,8 +25,8 @@ def test_story_approach_stops_at_conversational_distance():
     assert len(cues) == 1
     cue = cues[0]
     assert cue.target == "tunde"
-    assert cue.interaction_distance == 70.0
-    assert cue.x == 400.0
+    assert cue.interaction_distance == 150.0
+    assert cue.x == 480.0
 
 
 def test_story_approach_can_be_classified_from_its_final_geometry():
@@ -36,4 +36,4 @@ def test_story_approach_can_be_classified_from_its_final_geometry():
     cue = cues_for(plan, POSITIONS)[0]
     positions = dict(POSITIONS)
     positions["seyi"] = (cue.x, cue.y)
-    assert interaction_zone("seyi", "tunde", positions) == "close"
+    assert interaction_zone("seyi", "tunde", positions) == "near"
