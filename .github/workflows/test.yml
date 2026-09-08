@@ -1,4 +1,4 @@
-name: AFRITOON Tests
+name: ITANRA Tests
 
 on:
   push:
@@ -19,3 +19,20 @@ jobs:
         env:
           PYTHONPATH: .
         run: pytest -q
+      - name: Render NEPA visual checkpoints
+        env:
+          PYTHONPATH: .
+        run: |
+          mkdir -p output/nepa-checkpoints
+          python tools/render_frame.py scenes/nepa_please.yaml --time 1 --output output/nepa-checkpoints/01.png
+          python tools/render_frame.py scenes/nepa_please.yaml --time 8 --output output/nepa-checkpoints/08.png
+          python tools/render_frame.py scenes/nepa_please.yaml --time 13 --output output/nepa-checkpoints/13.png
+          python tools/render_frame.py scenes/nepa_please.yaml --time 19 --output output/nepa-checkpoints/19.png
+          python tools/render_frame.py scenes/nepa_please.yaml --time 22 --output output/nepa-checkpoints/22.png
+      - name: Upload NEPA visual checkpoints
+        uses: actions/upload-artifact@v4
+        with:
+          name: itanra-nepa-visual-checkpoints
+          path: output/nepa-checkpoints/
+          if-no-files-found: error
+          retention-days: 14
