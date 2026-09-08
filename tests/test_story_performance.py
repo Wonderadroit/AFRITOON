@@ -78,3 +78,20 @@ def test_camera_intent_becomes_camera_focus():
     plan = build_story_plan("Camera", 5, [StoryBeat(1, "Seyi looks at camera", "seyi", "deadpan", "address audience")])
     cue = cue_at(cues_for(plan, "seyi"), 1)
     assert cue is not None and cue.focus == "camera"
+
+
+def test_relaxed_story_intents_become_characterful_actions():
+    plan = build_story_plan("Intent", 20, [
+        StoryBeat(1, "tunde enjoys himself", "tunde", "funny", "overconfidence"),
+        StoryBeat(6, "tunde realizes the problem", "tunde", "surprised", "check the situation and recover"),
+        StoryBeat(12, "mama enters", "mama", "deadpan", "comes in and notices everything"),
+        StoryBeat(16, "mama exposes Tunde", "mama", "deadpan", "one stern question ends the mystery"),
+    ])
+    tunde_early = cue_at(cues_for(plan, "tunde"), 1)
+    tunde_recover = cue_at(cues_for(plan, "tunde"), 6)
+    mama_enter = cue_at(cues_for(plan, "mama"), 12)
+    mama_payoff = cue_at(cues_for(plan, "mama"), 16)
+    assert tunde_early is not None and tunde_early.action == "vibe"
+    assert tunde_recover is not None and tunde_recover.action == "check_pocket"
+    assert mama_enter is not None and mama_enter.action == "turn"
+    assert mama_payoff is not None and mama_payoff.action == "angry"
