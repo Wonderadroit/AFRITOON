@@ -15,7 +15,7 @@ def test_listener_focuses_on_visible_speaker():
     assert state.focus == "tunde"
 
 
-def test_speaker_does_not_focus_on_themselves_from_dialogue():
+def test_speaker_focuses_on_visible_listener():
     scene = CastScene(
         "dialogue_stage",
         4,
@@ -23,7 +23,7 @@ def test_speaker_does_not_focus_on_themselves_from_dialogue():
         dialogue=[DialogueLine("tunde", "Seyi, listen.", 1.0, 1.5)],
     )
     state = performance_for_character(scene, "tunde", 1.4)
-    assert state.focus is None
+    assert state.focus == "seyi"
 
 
 def test_listener_does_not_focus_hidden_speaker():
