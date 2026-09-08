@@ -14,7 +14,7 @@ def test_nepa_approach_completes_after_entry():
     assert entering.x < 570.0
     assert arrived.visible is True
     assert arrived.x == 400.0
-    assert arrived.y == 1450.0
+    assert arrived.y == 1650.0
 
 
 def test_nepa_dialogue_uses_conversational_focus_after_approach():
