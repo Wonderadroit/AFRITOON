@@ -14,6 +14,7 @@ class MicroMotion:
     weight: float
     blink: float
     speech: float = 0.0
+    head_tilt: float = 0.0
 
 
 def _pulse(t: float, period: float, width: float) -> float:
@@ -44,7 +45,7 @@ def micro_motion(
     speaking: bool = False,
     expression: str = "neutral",
 ) -> MicroMotion:
-    """Return deterministic breathing, weight, blink and speech cues."""
+    """Return deterministic breathing, weight, blink, speech and head cues."""
     cid = str(character).strip().lower()
     t = max(0.0, float(time))
     rhythm = {"tunde": 3.15, "seyi": 3.55, "mama": 4.05}.get(cid, 3.5)
@@ -61,9 +62,29 @@ def micro_motion(
         attention,
         speaking,
     )
-    if str(expression).strip().lower() in {"shocked", "surprised"}:
+    expression_name = str(expression).strip().lower()
+    if expression_name in {"shocked", "surprised"}:
         blink *= 0.18
     speech = 0.0
     if speaking:
         speech = math.sin((2.0 * math.pi * t * 2.35) + phase_offset) * 0.5
-    return MicroMotion(breath=breath, weight=weight, blink=blink, speech=speech)
+
+    # A tiny, slow nod/tilt makes a listener feel present without turning the
+    # character into a continuously moving puppet. Strong expressions dominate
+    # the direction, while attention adds a restrained conversational tilt.
+    head_tilt = math.sin((2.0 * math.pi * t / (rhythm * 2.15)) + phase_offset) * 0.85
+    if attention:
+        head_tilt += math.sin((2.0 * math.pi * t / 2.8) + phase_offset) * 0.45
+    if expression_name in {"deadpan", "angry"}:
+        head_tilt *= 0.55
+    elif expression_name in {"sad", "curious"}:
+        head_tilt *= 1.15
+    head_tilt = max(-1.6, min(1.6, head_tilt))
+
+    return MicroMotion(
+        breath=breath,
+        weight=weight,
+        blink=blink,
+        speech=speech,
+        head_tilt=head_tilt,
+    )
