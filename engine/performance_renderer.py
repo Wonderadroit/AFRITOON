@@ -74,9 +74,10 @@ def _conversation_partner(scene: CastScene, character: str, frame_time: float) -
     if line is None:
         return None
     speaker = line.character.strip().lower()
-    if speaker != character:
-        return speaker
     state = scene.state_at(frame_time)
+    if speaker != character:
+        speaker_state = state.characters.get(speaker)
+        return speaker if speaker_state is not None and speaker_state.visible else None
     visible = [
         cid for cid, instance in state.characters.items()
         if cid != character and instance.visible
@@ -180,9 +181,6 @@ def performance_for_character(scene: CastScene, character, frame_time):
 
     pose = instance.pose
     if speaking:
-        # A reaction/action gets its full authored beat before speech can
-        # interrupt it. This gives shock, freeze, turns and similar actions
-        # believable anticipation/hold rather than instantly snapping to talk.
         action_active, _ = _action_is_active(scene, character, pose, frame_time)
         if not action_active or pose in {"idle", "stand", "look", "turn"}:
             pose = "talk"
