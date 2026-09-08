@@ -86,7 +86,20 @@ def _background_variant(power_off: bool) -> Image.Image:
 
 
 def render_background(scene_name: str, frame_time: float) -> Image.Image:
-    """Return a reusable warm home environment with a power-outage lighting beat."""
+    """Return a reusable warm home environment with a short blackout transition."""
     is_nepa = "nepa" in scene_name.lower()
-    power_off = is_nepa and frame_time >= 7.0
-    return _background_variant(power_off).copy()
+    if not is_nepa:
+        return _background_variant(False).copy()
+
+    t = float(frame_time)
+    if t < 7.0:
+        return _background_variant(False).copy()
+    if t >= 7.35:
+        return _background_variant(True).copy()
+
+    # A brief deterministic dimming ramp keeps the outage from looking like
+    # a hard slideshow cut while preserving exact lighting at either side.
+    amount = max(0.0, min(1.0, (t - 7.0) / 0.35))
+    lit = _background_variant(False)
+    dark = _background_variant(True)
+    return Image.blend(lit, dark, amount).convert("RGBA")
