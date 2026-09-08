@@ -20,3 +20,19 @@ def test_motion_stays_bounded():
             assert -1.0 <= state.breath <= 1.0
             assert -1.0 <= state.weight <= 1.0
             assert 0.0 <= state.blink <= 1.0
+            assert -1.0 <= state.speech <= 1.0
+
+
+def test_attention_and_shock_reduce_blink_hold():
+    normal = micro_motion("tunde", 0.0)
+    attentive = micro_motion("tunde", 0.0, attention=True)
+    shocked = micro_motion("tunde", 0.0, attention=True, expression="shocked")
+    assert attentive.blink <= normal.blink
+    assert shocked.blink <= attentive.blink
+
+
+def test_speaking_adds_bounded_micro_motion():
+    silent = micro_motion("seyi", 1.0)
+    speaking = micro_motion("seyi", 1.0, speaking=True)
+    assert speaking.speech != silent.speech
+    assert abs(speaking.speech) <= 0.5
