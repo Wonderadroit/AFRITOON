@@ -32,12 +32,12 @@ def _interaction_geometry(gaze: str, phase: str, motion_progress: float, strengt
     return direction * 3.0 * amount, direction * 1.0 * amount
 
 
-def _face_transform(expression_name: str, layer: str, mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0, blink: float = 0.0) -> str | None:
+def _face_transform(expression_name: str, layer: str, mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0, blink: float = 0.0, head_tilt: float = 0.0) -> str | None:
     state = expression(expression_name)
     transforms: list[str] = []
     expression_head_angle = {"neutral": 0.0, "happy": -2.0, "curious": -4.0, "shocked": 2.0, "deadpan": 1.0, "angry": -2.0, "sad": 3.0, "laughing": -3.0, "surprised": 2.0}[state.name]
     interaction_head_angle, _ = _interaction_geometry(gaze, phase, motion_progress, interaction_strength)
-    head_angle = expression_head_angle + interaction_head_angle
+    head_angle = expression_head_angle + interaction_head_angle + max(-1.6, min(1.6, float(head_tilt)))
     face_layers = {"head", "ears", "front_hair", "left_eye", "right_eye", "left_brow", "right_brow", "nose", "mouth"}
     if layer in face_layers and head_angle:
         transforms.append(f"rotate({head_angle} 300 335)")
@@ -64,16 +64,8 @@ def _face_transform(expression_name: str, layer: str, mouth_name: str | None = N
 
 
 def _set_mouth_variant_visibility(root: ET.Element, mouth_name: str | None) -> None:
-    """Select one authored mouth shape without changing non-mouth artwork.
-
-    Masters that predate authored variants are left untouched. This makes the
-    renderer backward-compatible while allowing production masters to contain
-    real lip shapes instead of stretching one bitmap-like mouth.
-    """
-    variants = [
-        node for node in root.iter()
-        if node.attrib.get("data-mouth")
-    ]
+    """Select one authored mouth shape while preserving legacy masters."""
+    variants = [node for node in root.iter() if node.attrib.get("data-mouth")]
     if not variants:
         return
     names = {node.attrib["data-mouth"] for node in variants}
@@ -83,7 +75,7 @@ def _set_mouth_variant_visibility(root: ET.Element, mouth_name: str | None) -> N
 
 
 @lru_cache(maxsize=1024)
-def _layer_svgs_cached(master_name: str, expression_name: str, mouth_name: str | None, gaze: str, phase: str, motion_progress: float, interaction_strength: float, blink: float) -> tuple[tuple[str, str], ...]:
+def _layer_svgs_cached(master_name: str, expression_name: str, mouth_name: str | None, gaze: str, phase: str, motion_progress: float, interaction_strength: float, blink: float, head_tilt: float) -> tuple[tuple[str, str], ...]:
     master = Path(master_name)
     root = ET.fromstring(master.read_text(encoding="utf-8"))
     defs = [ET.fromstring(ET.tostring(node, encoding="unicode")) for node in root if _svg_namespace(node.tag) == "defs"]
@@ -100,7 +92,7 @@ def _layer_svgs_cached(master_name: str, expression_name: str, mouth_name: str |
         wrapper_group = ET.fromstring(ET.tostring(node, encoding="unicode"))
         if layer == "mouth":
             _set_mouth_variant_visibility(wrapper_group, mouth_name or expression(expression_name).mouth)
-        transform = _face_transform(expression_name, layer, mouth_name, gaze, phase, motion_progress, interaction_strength, blink)
+        transform = _face_transform(expression_name, layer, mouth_name, gaze, phase, motion_progress, interaction_strength, blink, head_tilt)
         if transform:
             wrapper_group.set("transform", transform)
         wrapper.append(wrapper_group)
@@ -112,8 +104,8 @@ def _quantize(value: float, step: float) -> float:
     return round(round(float(value) / step) * step, 4)
 
 
-def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0, blink: float = 0.0) -> dict[str, str]:
-    return dict(_layer_svgs_cached(str(master.resolve()), expression_name, mouth_name, gaze, phase, _quantize(motion_progress, 0.08), _quantize(interaction_strength, 0.05), _quantize(blink, 0.10)))
+def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0, blink: float = 0.0, head_tilt: float = 0.0) -> dict[str, str]:
+    return dict(_layer_svgs_cached(str(master.resolve()), expression_name, mouth_name, gaze, phase, _quantize(motion_progress, 0.08), _quantize(interaction_strength, 0.05), _quantize(blink, 0.10), _quantize(head_tilt, 0.20)))
 
 
 @lru_cache(maxsize=1024)
@@ -159,7 +151,7 @@ def render_semantic_character(master: str | Path, character_id: str, pose: str, 
     is_speaking = bool(speaking) if speaking is not None else active_mouth not in {"closed", "talk_rest"}
     is_attentive = bool(attention) if attention is not None else gaze != "center"
     dynamics = micro_motion(character_id, time, attention=is_attentive, speaking=is_speaking, expression=expression_name)
-    groups = _layer_svgs(master_path, expression_name=expression_name, mouth_name=mouth_name, gaze=gaze, phase=phase, motion_progress=effective_progress, interaction_strength=effective_strength, blink=dynamics.blink)
+    groups = _layer_svgs(master_path, expression_name=expression_name, mouth_name=mouth_name, gaze=gaze, phase=phase, motion_progress=effective_progress, interaction_strength=effective_strength, blink=dynamics.blink, head_tilt=dynamics.head_tilt)
     if not groups:
         raise ValueError(f"Master artwork has no semantic layers: {master_path}")
     canvas = Image.new("RGBA", (SOURCE_W, SOURCE_H), (0, 0, 0, 0))
