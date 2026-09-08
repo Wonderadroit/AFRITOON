@@ -8,7 +8,7 @@ def test_story_intent_creates_approach_cue():
     assert len(cues) == 1
     assert cues[0].character == "seyi"
     assert cues[0].target == "tunde"
-    assert cues[0].x == 450.0
+    assert cues[0].x == 580.0
 
 
 def test_story_blocking_interpolates_deterministically():
@@ -18,5 +18,5 @@ def test_story_blocking_interpolates_deterministically():
     x1, y1 = position_at((800, 1450), cue, 1.5)
     x2, y2 = position_at((800, 1450), cue, 2.0)
     assert (x0, y0) == (800, 1450)
-    assert 450 < x1 < 800
-    assert (x2, y2) == (450.0, 1450.0)
+    assert 580 < x1 < 800
+    assert (x2, y2) == (580.0, 1450.0)
