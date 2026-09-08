@@ -20,17 +20,17 @@ scene:
         event: "power goes off"
         character: tunde
         emotion: shocked
-        intent: "panic"
+        intent: "panic and freeze for a beat"
       - at: 12.0
         event: "seyi enters and approaches Tunde"
         character: seyi
         emotion: deadpan
-        intent: "walks in to watch Tunde suffer"
+        intent: "walks in slowly to watch Tunde suffer"
       - at: 14.0
         event: "tunde realizes the problem"
         character: tunde
         emotion: surprised
-        intent: "try to recover"
+        intent: "check the situation and try to recover"
       - at: 18.0
         event: "mama enters"
         character: mama
@@ -40,7 +40,7 @@ scene:
         event: "mama exposes Tunde"
         character: mama
         emotion: deadpan
-        intent: "one question ends the mystery"
+        intent: "one stern question ends the mystery"
         payoff: true
       - at: 22.8
         event: "seyi reacts"
@@ -58,6 +58,17 @@ scene:
     - id: mama
       position: [810, 1450]
       scale: 1.05
+  blocking:
+    - at: 12.0
+      character: seyi
+      action: enter
+      from: [1260, 1450]
+      duration: 0.8
+    - at: 18.0
+      character: mama
+      action: enter
+      from: [-180, 1450]
+      duration: 0.6
   beats:
     - at: 0.0
       emotion: funny
