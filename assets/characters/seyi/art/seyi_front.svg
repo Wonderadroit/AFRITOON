@@ -16,20 +16,10 @@
 <g data-layer="back_hair">
   <path fill="#171717" d="M174 294 Q170 176 226 113 Q260 76 300 76 Q340 76 374 113 Q430 176 426 294 Q404 250 374 220 Q338 184 300 181 Q262 184 226 220 Q196 250 174 294Z"/>
   <g fill="none" stroke="#171717" stroke-width="22">
-    <path d="M198 210 C185 300 190 390 170 490 C162 535 168 590 188 626"/>
-    <path d="M224 192 C214 294 224 380 205 492 C198 536 207 596 226 650"/>
-    <path d="M250 184 C246 290 256 392 244 505 C239 558 246 612 263 670"/>
-    <path d="M350 184 C354 290 344 392 356 505 C361 558 354 612 337 670"/>
-    <path d="M376 192 C386 294 376 380 395 492 C402 536 393 596 374 650"/>
-    <path d="M402 210 C415 300 410 390 430 490 C438 535 432 590 412 626"/>
+    <path d="M198 210 C185 300 190 390 170 490 C162 535 168 590 188 626"/><path d="M224 192 C214 294 224 380 205 492 C198 536 207 596 226 650"/><path d="M250 184 C246 290 256 392 244 505 C239 558 246 612 263 670"/><path d="M350 184 C354 290 344 392 356 505 C361 558 354 612 337 670"/><path d="M376 192 C386 294 376 380 395 492 C402 536 393 596 374 650"/><path d="M402 210 C415 300 410 390 430 490 C438 535 432 590 412 626"/>
   </g>
   <g fill="none" stroke="#3b3b3b" stroke-width="5">
-    <path d="M198 210 C185 300 190 390 170 490 C162 535 168 590 188 626" stroke-dasharray="12 12"/>
-    <path d="M224 192 C214 294 224 380 205 492 C198 536 207 596 226 650" stroke-dasharray="12 12"/>
-    <path d="M250 184 C246 290 256 392 244 505 C239 558 246 612 263 670" stroke-dasharray="12 12"/>
-    <path d="M350 184 C354 290 344 392 356 505 C361 558 354 612 337 670" stroke-dasharray="12 12"/>
-    <path d="M376 192 C386 294 376 380 395 492 C402 536 393 596 374 650" stroke-dasharray="12 12"/>
-    <path d="M402 210 C415 300 410 390 430 490 C438 535 432 590 412 626" stroke-dasharray="12 12"/>
+    <path d="M198 210 C185 300 190 390 170 490 C162 535 168 590 188 626" stroke-dasharray="12 12"/><path d="M224 192 C214 294 224 380 205 492 C198 536 207 596 226 650" stroke-dasharray="12 12"/><path d="M250 184 C246 290 256 392 244 505 C239 558 246 612 263 670" stroke-dasharray="12 12"/><path d="M350 184 C354 290 344 392 356 505 C361 558 354 612 337 670" stroke-dasharray="12 12"/><path d="M376 192 C386 294 376 380 395 492 C402 536 393 596 374 650" stroke-dasharray="12 12"/><path d="M402 210 C415 300 410 390 430 490 C438 535 432 590 412 626" stroke-dasharray="12 12"/>
   </g>
 </g>
 <g data-layer="front_hair"><path fill="#171717" d="M180 278 Q176 178 225 126 Q260 91 300 92 Q340 91 375 126 Q424 178 420 278 L398 260 Q392 180 350 142 Q328 121 300 120 Q272 121 250 142 Q208 180 202 260Z"/><path fill="#242424" d="M194 180 Q235 102 300 101 Q365 102 406 180 Q380 153 348 147 Q300 135 252 147 Q220 153 194 180Z"/></g>
@@ -38,5 +28,19 @@
 <g data-layer="left_brow"><path fill="none" stroke-width="9" d="M211 279 Q244 264 276 276"/></g>
 <g data-layer="right_brow"><path fill="none" stroke-width="9" d="M389 279 Q356 264 324 276"/></g>
 <g data-layer="nose"><path fill="none" stroke="#4d291c" stroke-width="6" d="M300 337 L286 396 Q300 404 317 396"/></g>
-<g data-layer="mouth"><path fill="none" stroke="#4d291c" stroke-width="6" d="M267 432 Q300 442 333 432"/><path fill="none" stroke="#4d291c" stroke-width="4" d="M278 447 Q300 452 322 447"/></g>
+<g data-layer="mouth">
+  <g data-mouth="closed"><path fill="none" stroke="#4d291c" stroke-width="6" d="M268 438 Q300 438 332 438"/></g>
+  <g data-mouth="smile"><path fill="none" stroke="#4d291c" stroke-width="6" d="M264 431 Q300 454 336 430"/></g>
+  <g data-mouth="small_open"><path fill="#3a1715" stroke="#4d291c" stroke-width="5" d="M272 431 Q300 441 328 431 Q325 452 300 456 Q275 452 272 431Z"/></g>
+  <g data-mouth="open"><path fill="#321413" stroke="#4d291c" stroke-width="5" d="M260 428 Q300 447 340 427 Q336 470 300 475 Q264 470 260 428Z"/></g>
+  <g data-mouth="flat"><path fill="none" stroke="#4d291c" stroke-width="7" d="M268 439 L332 439"/></g>
+  <g data-mouth="tight"><path fill="none" stroke="#4d291c" stroke-width="8" d="M275 439 Q300 434 325 439"/></g>
+  <g data-mouth="sad"><path fill="none" stroke="#4d291c" stroke-width="6" d="M264 449 Q300 424 336 449"/></g>
+  <g data-mouth="wide_smile"><path fill="#f4f0e8" stroke="#4d291c" stroke-width="5" d="M254 428 Q300 451 346 424 Q342 466 300 472 Q258 466 254 428Z"/></g>
+  <g data-mouth="talk_a"><path fill="#321413" stroke="#4d291c" stroke-width="5" d="M270 430 Q300 440 330 430 Q327 460 300 465 Q273 460 270 430Z"/></g>
+  <g data-mouth="talk_e"><path fill="#321413" stroke="#4d291c" stroke-width="5" d="M275 432 Q300 439 325 432 Q322 450 300 454 Q278 450 275 432Z"/></g>
+  <g data-mouth="talk_o"><ellipse cx="300" cy="444" rx="20" ry="27" fill="#321413" stroke="#4d291c" stroke-width="5"/></g>
+  <g data-mouth="talk_m"><path fill="none" stroke="#4d291c" stroke-width="8" d="M273 440 Q300 445 327 440"/></g>
+  <g data-mouth="talk_rest"><path fill="none" stroke="#4d291c" stroke-width="5" d="M271 438 Q300 441 329 438"/></g>
+</g>
 </g></svg>
