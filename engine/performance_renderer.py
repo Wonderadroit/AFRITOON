@@ -35,7 +35,7 @@ CHARACTER_MOTION = {
         "idle": (0, 0, 1), "talk": (0, -2, 1), "shock": (-6, -10, 1.04),
         "shocked": (-6, -10, 1.04), "freeze": (0, 0, 1), "dance": (4, -6, 1.03),
         "vibe": (-2, -3, 1.02), "check_pocket": (3, 4, 1), "look_at_camera": (0, 0, 1.01),
-        "laugh": (2, -4, 1.02), "stand": (0, 0, 1),
+        "laugh": (2, -4, 1.02), "stand": (0, 0, 1), "look": (1.5, 0, 1),
     },
     "seyi": {
         "idle": (0, 0, 1), "talk": (.8, -1, 1), "look": (2.5, 0, 1), "turn": (5, 0, 1),
@@ -44,16 +44,9 @@ CHARACTER_MOTION = {
     "mama": {
         "idle": (0, 0, 1), "stand": (0, 0, 1), "talk": (-1, 1, 1.01), "turn": (-4, 0, 1),
         "look_at_camera": (-1.5, 0, 1.02), "angry": (0, 2, 1.01), "freeze": (0, 0, 1),
+        "look": (-1.0, 0, 1),
     },
 }
-
-
-def _action_is_active(scene: CastScene, character: str, pose: str, frame_time: float) -> tuple[bool, float | None]:
-    """Return whether the current authored action is still in its performance window."""
-    start = _action_start_at(scene, character, frame_time, pose)
-    if start is None:
-        return False, None
-    return frame_time - start < timing_for(character, pose).total, start
 
 
 def _action_start_at(scene, character, frame_time, action):
@@ -67,6 +60,14 @@ def _action_start_at(scene, character, frame_time, action):
             if c.at <= frame_time and c.action == action
         )
     return max(candidates) if candidates else None
+
+
+def _action_is_active(scene: CastScene, character: str, pose: str, frame_time: float) -> tuple[bool, float | None]:
+    """Return whether the current authored action is still in its performance window."""
+    start = _action_start_at(scene, character, frame_time, pose)
+    if start is None:
+        return False, None
+    return frame_time - start < timing_for(character, pose).total, start
 
 
 def _conversation_partner(scene: CastScene, character: str, frame_time: float) -> str | None:
@@ -88,6 +89,25 @@ def _conversation_partner(scene: CastScene, character: str, frame_time: float) -
 def _conversation_focus(scene: CastScene, character: str, frame_time: float) -> str | None:
     partner = _conversation_partner(scene, character, frame_time)
     return partner if partner in scene.state_at(frame_time).characters else None
+
+
+def _listener_state(scene: CastScene, character: str, frame_time: float, pose: str, expression: str) -> tuple[str, str, str | None]:
+    """Give a listener a small, readable listening behavior instead of a frozen pose."""
+    partner = _conversation_partner(scene, character, frame_time)
+    if partner is None:
+        return pose, expression, None
+
+    start = _action_start_at(scene, character, frame_time, pose)
+    stale = start is not None and frame_time - start >= timing_for(character, pose).total
+    passive = pose in {"idle", "stand", "talk", "look", "turn", "freeze"}
+
+    # Once an authored reaction has finished, the actor settles into listening.
+    # Preserve a strong emotional state (shock/anger/sadness) rather than
+    # replacing it with a generic neutral face.
+    if stale or passive:
+        if "look" in CHARACTER_MOTION.get(character, {}):
+            pose = "look"
+    return pose, expression, partner
 
 
 def _draw_expression(image, character, expression, mouth):
@@ -186,16 +206,21 @@ def performance_for_character(scene: CastScene, character, frame_time):
             pose = "talk"
 
     resolved_expression = acting_expression(character, pose, instance.expression)
+    focus = None
+    if not speaking:
+        pose, resolved_expression, focus = _listener_state(
+            scene, character, frame_time, pose, resolved_expression
+        )
+
     start = _action_start_at(scene, character, frame_time, pose)
     if start is not None:
         phase, _, motion_progress = acting_motion(character, pose, frame_time - start)
     else:
         phase, motion_progress = "hold", 1.0
 
-    focus = None
-    if scene.story_plan is not None:
+    if focus is None and scene.story_plan is not None:
         story_cue = cue_at(cues_for(scene.story_plan, character), frame_time)
-        if story_cue is not None and story_cue.action == instance.pose:
+        if story_cue is not None:
             focus = story_cue.focus
     if focus is None:
         focus = _conversation_focus(scene, character, frame_time)
