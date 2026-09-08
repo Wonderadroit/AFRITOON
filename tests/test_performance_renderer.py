@@ -54,6 +54,24 @@ def test_master_renderer_produces_different_performance_frames():
     assert first.tobytes() != later.tobytes()
 
 
+def test_nepa_checkpoint_frames_render_with_expected_cast_visibility():
+    pytest.importorskip("cairosvg")
+    scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
+    expected = {
+        1.0: {"tunde": True, "seyi": False, "mama": False},
+        8.0: {"tunde": True, "seyi": False, "mama": False},
+        13.0: {"tunde": True, "seyi": True, "mama": False},
+        19.0: {"tunde": True, "seyi": True, "mama": True},
+        22.0: {"tunde": True, "seyi": True, "mama": True},
+    }
+    for at, visibility in expected.items():
+        frame = render_master_cast(scene, at)
+        assert frame.size == (1080, 1920)
+        assert frame.getbbox() is not None
+        state = scene.state_at(at)
+        assert {cid: item.visible for cid, item in state.characters.items()} == visibility
+
+
 def test_shock_has_anticipation_before_dialogue_interrupts_it():
     scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
     early = performance_for_character(scene, "tunde", 7.35)
