@@ -9,9 +9,8 @@ from build_character_layers import CHARACTERS, LAYERS, semantic_nodes  # noqa: E
 
 
 EXPECTED_LAYERS = {
-    "tunde": {"legs", "shoes", "torso", "left_arm", "right_arm", "neck", "head", "ears", "front_hair", "left_eye", "right_eye", "left_brow", "right_brow", "nose", "mouth"},
-    "seyi": {"legs", "shoes", "torso", "left_arm", "right_arm", "neck", "head", "ears", "front_hair", "left_eye", "right_eye", "left_brow", "right_brow", "nose", "mouth"},
-    "mama": {"legs", "shoes", "torso", "left_arm", "right_arm", "neck", "head", "ears", "front_hair", "left_eye", "right_eye", "left_brow", "right_brow", "nose", "mouth"},
+    cid: {"back_hair", "legs", "shoes", "torso", "left_arm", "right_arm", "neck", "head", "ears", "front_hair", "left_eye", "right_eye", "left_brow", "right_brow", "nose", "mouth"}
+    for cid in ("tunde", "seyi", "mama")
 }
 
 
@@ -40,10 +39,10 @@ def test_semantic_mapping_preserves_both_arms_and_brows():
             assert semantic[layer]
 
 
-def test_missing_back_hair_is_explicitly_valid():
+def test_back_hair_is_a_canonical_layer():
     for cid in CHARACTERS:
         master = ROOT / "assets" / "characters" / cid / "art" / f"{cid}_front.svg"
         root = ET.parse(master).getroot()
         outer = next(node for node in root if node.tag.rsplit("}", 1)[-1] == "g")
         semantic = semantic_nodes(list(outer), cid)
-        assert "back_hair" not in semantic
+        assert "back_hair" in semantic
