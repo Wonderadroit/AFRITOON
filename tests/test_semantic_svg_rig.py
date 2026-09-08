@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from engine.character_pose import pose_for
-from engine.semantic_svg_rig import render_semantic_character
+from engine.semantic_svg_rig import _layer_svgs, render_semantic_character
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -32,6 +32,14 @@ def test_character_pose_profiles_remain_distinct():
     mama = pose_for("mama", "look_at_camera")
     assert tunde.layers != seyi.layers
     assert seyi.layers != mama.layers
+
+
+def test_semantic_layer_wrappers_preserve_master_defs():
+    for character in ("tunde", "seyi", "mama"):
+        path = ROOT / "assets" / "characters" / character / "art" / f"{character}_front.svg"
+        layers = _layer_svgs(path)
+        assert "torso" in layers
+        assert "<linearGradient" in layers["torso"]
 
 
 def test_semantic_renderer_changes_pixels_between_poses():
