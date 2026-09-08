@@ -1,52 +1,53 @@
 # ITANRA Character Bible
 
 **Status:** Canonical production specification  
-**Version:** 1.1  
+**Version:** 2.0  
 **Scope:** Tunde, Seyi and Mama recurring universe
 
 ## Purpose
 
-ITANRA characters must feel like recurring people, not disposable generated assets. The character artwork is the visual source of truth; this document defines the identity, proportions, acting grammar and production constraints that artwork and runtime must preserve.
+ITANRA characters must feel like recurring people, not disposable generated assets. The approved character-sheet direction is the visual reference for identity; production artwork must be clean, authored, layered artwork derived from that reference.
 
-A character may be animated, posed, cropped, mirrored where explicitly supported, or expressed differently, but those operations must not silently redesign the character.
+A character may be animated, posed, cropped, or expressed differently, but those operations must not silently redesign the character.
 
 ## Visual target
 
 - Human-looking stylized 2D characters.
-- Clean bold linework with simple cel-style shading.
+- Clean bold linework with controlled cel-style shading.
+- Warm, polished illustrated finish; not photorealistic and not Pixar-like.
 - Designed for phone screens and vertical 9:16 framing.
 - Expressive eyes, eyebrows, mouth and hands matter more than decorative detail.
 - Humor comes from acting, timing, contrast and recognition, not degrading caricature.
-- Tunde, Seyi and Mama must remain distinguishable by silhouette, wardrobe and facial construction.
-- Base artwork must remain pose-neutral and expression-neutral enough to support independent animation.
+- Tunde, Seyi and Mama must remain distinguishable by silhouette, wardrobe, hair and facial construction.
+- Generated reference sheets are design references, not runtime assets.
+- Production masters must remain deterministic and reusable across episodes.
 
 ## Canonical cast
 
-### Tunde — the confident mistake
+### Tunde — the dreamer / overthinker
 
-**Role:** protagonist  
-**Age band:** young adult
+**Role:** big brother / friend  
+**Age:** 24
 
-**Personality:** confident, mischievous, optimistic, often wrong.
+**Personality:** confident, funny, mischievous, optimistic, often wrong.
 
 **Canonical visual identity**
 
 - Medium-dark brown skin.
-- Short low-fade black hair.
+- Short textured black low-fade haircut.
 - Slightly oversized head relative to body.
 - Young-adult build with slightly broad shoulders.
-- Warm-gold graphic T-shirt.
-- Deep-blue denim trousers.
+- Black hoodie as the stable core wardrobe cue.
+- Deep olive/green cargo trousers.
 - Off-white sneakers.
-- Bold readable eyebrows and eyes.
-- Clear cheek and jaw contour.
-- Default posture communicates chest-out confidence.
+- Highly expressive eyes and eyebrows.
+- Confident, chest-out posture.
 
 **Recognition hierarchy**
 
 1. Head-to-body ratio.
-2. Low-fade hairstyle.
-3. Warm-gold shirt.
+2. Short textured low-fade hairstyle.
+3. Black hoodie + cargo trousers.
 4. Expressive eyebrows/eyes.
 5. Confident posture.
 
@@ -56,40 +57,37 @@ A character may be animated, posed, cropped, mirrored where explicitly supported
 
 **Signature actions**
 
+- big hand gestures
 - empty-pocket check
 - forced smile
-- camera look
 - sudden shock
-- overconfident pointing
+- camera look
 
-**Comedy rule:** Tunde is funny because he believes himself before reality catches him, not because he is visually foolish.
+### Seyi — the realist / observer
 
-### Seyi — the deadpan human reaction button
+**Role:** friend / confidant  
+**Age:** 22
 
-**Role:** best friend  
-**Age band:** young adult
-
-**Personality:** observant, deadpan, smart, patient, quietly sarcastic.
+**Personality:** smart, calm, sarcastic, observant, quietly loyal.
 
 **Canonical visual identity**
 
 - Dark-brown skin.
 - Slightly taller and leaner than Tunde.
-- Neat short black haircut.
-- Muted-teal casual shirt.
-- Deep-blue jeans.
+- Long black braids.
+- Small gold hoop earrings.
+- Black fitted top.
+- Lilac cargo trousers.
 - Off-white sneakers.
-- Restrained facial movement.
-- Highly readable eyes.
-- Cleaner, understated silhouette than Tunde.
+- Restrained facial movement with highly readable eyes.
 
 **Recognition hierarchy**
 
 1. Taller/leaner silhouette than Tunde.
-2. Muted-teal shirt.
-3. Neat short haircut.
-4. Restrained expression.
-5. Highly readable eyes.
+2. Long braids.
+3. Lilac cargo trousers + black top.
+4. Gold hoop earrings.
+5. Restrained/deadpan expression.
 
 **Acting grammar**
 
@@ -98,28 +96,27 @@ A character may be animated, posed, cropped, mirrored where explicitly supported
 **Signature actions**
 
 - side-eye
+- dry humor
+- arms crossed
 - slow head turn
 - knowing smile
 - long pause
-- look at Tunde, then camera
-- walk away without explaining
 
-**Comedy rule:** Seyi's restraint is the joke. Do not animate him as constantly expressive.
+**Comedy rule:** Seyi's restraint is the joke. Do not animate her as constantly expressive.
 
-### Mama — the final boss of information
+### Mama — the backbone / wisdom
 
-**Role:** mother  
-**Age band:** older adult
+**Role:** mother / matriarch  
+**Age:** 50+
 
-**Personality:** perceptive, commanding, warm, funny, unshakable.
+**Personality:** strong, caring, funny, straight-talking, no-nonsense.
 
 **Canonical visual identity**
 
 - Medium-dark brown skin.
 - Strong maternal, fuller silhouette.
-- Stable plum-toned headwrap/hair treatment.
-- Soft-rose blouse.
-- Earth-brown wrapper.
+- Patterned green-and-orange headwrap.
+- Matching green-and-orange patterned dress.
 - Cream house shoes.
 - Authoritative eyes and eyebrows.
 - Expressive hands.
@@ -128,9 +125,9 @@ A character may be animated, posed, cropped, mirrored where explicitly supported
 **Recognition hierarchy**
 
 1. Fuller maternal silhouette.
-2. Stable headwrap.
-3. Soft-rose blouse / earth-brown wrapper.
-4. Authoritative eyes and brows.
+2. Green-and-orange headwrap.
+3. Matching patterned dress.
+4. Authoritative eyes/brows.
 5. Grounded posture.
 
 **Acting grammar**
@@ -139,56 +136,26 @@ A character may be animated, posed, cropped, mirrored where explicitly supported
 
 **Signature actions**
 
-- hands on hips
-- silent stare
 - raised eyebrow
+- hands on hips
+- knowing look
+- deep sigh
 - slow turn
 - instant interrogation
-- knowing look
 
 **Comedy rule:** Mama wins through anticipation, intelligence and authority. Never use uglification or stereotypes as the joke mechanism.
 
 ## Canonical proportions
 
-The current front masters use a shared `600 x 1100` coordinate space. Their body proportions are intentionally related but not identical:
+Production artwork uses a shared `600 x 1100` source space. Proportions remain related but character-specific:
 
 | Character | Head ratio | Silhouette | Primary distinction |
 |---|---:|---|---|
-| Tunde | 1.15 | young adult, slightly broad | oversized head + gold shirt |
-| Seyi | 1.05 | taller, leaner | teal shirt + restrained face |
-| Mama | 1.08 | fuller, grounded | headwrap + maternal shape |
+| Tunde | 1.15 | young adult, slightly broad | oversized head + hoodie/cargo silhouette |
+| Seyi | 1.05 | taller, leaner | braids + lilac cargos + restrained face |
+| Mama | 1.08 | fuller, grounded | patterned headwrap + dress |
 
 These values describe identity, not a requirement that every pose use identical pixel dimensions.
-
-## Canonical palette
-
-The palette is a recognition system, not merely decoration.
-
-### Tunde
-
-- skin: medium-dark brown
-- hair: black
-- shirt: warm gold
-- denim: deep blue
-- shoes: off-white
-
-### Seyi
-
-- skin: dark brown
-- hair: black
-- shirt: muted teal
-- denim: deep blue
-- shoes: off-white
-
-### Mama
-
-- skin: medium-dark brown
-- headwrap: plum
-- blouse: soft rose
-- wrapper: earth brown
-- shoes: cream
-
-Do not arbitrarily swap wardrobe colors between recurring characters.
 
 ## Rig contract
 
@@ -206,17 +173,9 @@ Each character is planned for:
 - `three_quarter`
 - `side`
 
-A view is production-ready only when it preserves:
+A view is production-ready only when it preserves the canonical design. A missing view must not be faked by skewing or stretching another view.
 
-- head/body proportions;
-- skin tone and line language;
-- canonical wardrobe;
-- hair/headwrap construction;
-- facial spacing;
-- silhouette;
-- character-specific recognition cues.
-
-If a genuine view has not been authored, runtime fallback to the canonical front master is allowed and must remain explicit. Do not fabricate a fake side or three-quarter identity by silently stretching the front artwork.
+Until genuine production views are authored, runtime fallback to the canonical front master remains explicit.
 
 ## Expression contract
 
@@ -226,23 +185,11 @@ Runtime semantic states:
 
 Expression changes must be independent of body-pose changes whenever the renderer supports the separation.
 
-### Expression priority
-
-At phone size, expression readability should be preserved in this order:
-
-1. eyes / gaze
-2. eyebrows
-3. mouth
-4. head angle
-5. body posture
-
-Character-specific acting overrides generic expression intensity. For example, Seyi's `shocked` state can be substantially more restrained than Tunde's.
+Character-specific performance overrides generic expression intensity. Seyi's shock, for example, can be much more restrained than Tunde's.
 
 ## Mouth contract
 
-Mouth animation is independent from the base head whenever possible. Dialogue systems may drive semantic mouth states without replacing the character artwork.
-
-The current engine may map dialogue into reusable mouth/viseme states. Do not bake dialogue-specific mouth shapes into master body artwork.
+Mouth animation is independent from the base head whenever possible. Dialogue systems may drive reusable semantic mouth/viseme states without replacing the character artwork.
 
 ## Pose and action rules
 
@@ -281,14 +228,15 @@ A character design passes when rendered in a simple 9:16 scene if:
 1. Tunde, Seyi and Mama can be identified without labels;
 2. their emotional state is readable;
 3. their silhouettes remain distinct;
-4. their signature wardrobe/hair cue survives;
+4. their signature wardrobe/hair cues survive;
 5. the artwork remains legible at small-screen viewing size;
 6. the three characters still look like the same people across scenes.
 
 ## Master artwork rules
 
-- SVG/vector masters are canonical.
-- Do not use generated images as silent replacements for canonical masters.
+- SVG/vector masters are canonical production assets.
+- The approved generated character sheets are visual references only.
+- Do not silently replace production masters with generated raster images.
 - Do not bake poses, expressions or dialogue into base artwork.
 - Keep artwork independent from scene YAML and timing logic.
 - Preserve the 16-layer production interface.
@@ -298,28 +246,19 @@ A character design passes when rendered in a simple 9:16 scene if:
 
 A character redesign is a product-level change, not an episode-level decision.
 
-Changes to any of the following must be made here first and then propagated through the asset pipeline:
-
-- proportions
-- face construction
-- hair/headwrap
-- wardrobe
-- palette
-- silhouette
-- canonical expressions
-- canonical action grammar
+Changes to proportions, face construction, hair, wardrobe, palette, silhouette, canonical expressions or action grammar must be made here first and then propagated through the asset pipeline.
 
 Episode-specific scenes may change **performance**, but may not redefine **identity**.
 
-## Current artwork sources
+## Production asset status
 
-Canonical front masters:
+The approved reference direction is locked as follows:
 
-- `assets/characters/tunde/art/tunde_front.svg`
-- `assets/characters/seyi/art/seyi_front.svg`
-- `assets/characters/mama/art/mama_front.svg`
+- Tunde: black hoodie, cargo trousers, short textured low-fade.
+- Seyi: young Nigerian woman, long braids, gold hoops, black top, lilac cargo trousers.
+- Mama: Nigerian matriarch, green-and-orange patterned headwrap and dress.
 
-The repository currently derives deterministic front-view layer files from these masters. Three-quarter and side views remain explicit authored-artwork states rather than being implied to exist.
+The existing SVG masters and semantic layer pipeline remain engine infrastructure, but they must be re-authored/updated to match this locked visual direction before they are treated as final production artwork. No fake turnaround views should be generated from the old masters.
 
 ## Production principle
 
