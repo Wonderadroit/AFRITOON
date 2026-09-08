@@ -46,7 +46,9 @@ def _story_event(scene: CastScene, t: float) -> str:
     if plan is None or not plan.beats:
         return ""
     active = [beat for beat in plan.beats if beat.at <= float(t)]
-    return str(active[-1].event).strip().lower() if active else ""
+    if not active:
+        return ""
+    return str(active[-1].event).strip().lower().replace(" ", "_")
 
 
 def _target(scene: CastScene, t: float) -> CameraState:
@@ -65,7 +67,7 @@ def _target(scene: CastScene, t: float) -> CameraState:
     if focus is not None:
         scale = 1.08
         shot = "medium"
-    if event in {"power_goes_off", "exposure", "tunde_realizes_problem"} and focus is not None:
+    if event in {"power_goes_off", "exposure", "tunde_realizes_the_problem"} and focus is not None:
         scale = 1.16
         shot = "close"
 
