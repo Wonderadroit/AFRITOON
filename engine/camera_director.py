@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-from typing import Mapping
 
 from .cast_scene import CastScene
 
@@ -58,8 +56,8 @@ def _target(scene: CastScene, t: float) -> CameraState:
     if focus not in positions:
         focus = None
 
-    # The default is a readable ensemble frame. Dialogue then earns a
-    # medium-close shot; high-impact beats get a slightly stronger push-in.
+    # Ensemble by default. A speaking/reacting character earns a medium shot;
+    # important story turns earn a restrained close-up.
     scale = 1.0
     shot = "wide"
     if focus is not None:
@@ -102,31 +100,35 @@ def _blend(a: CameraState, b: CameraState, amount: float) -> CameraState:
     )
 
 
-def camera_at(scene: CastScene, t: float, *, transition: float = 0.32) -> CameraState:
-    """Resolve a shot with a short eased transition around cue boundaries.
+def _camera_boundaries(scene: CastScene) -> list[float]:
+    """Return authored moments where the camera target may change."""
+    points = {0.0, float(scene.duration)}
+    for line in scene.dialogue:
+        points.add(max(0.0, min(scene.duration, float(line.at))))
+        if line.duration is not None:
+            points.add(max(0.0, min(scene.duration, float(line.at + line.duration))))
+    if scene.story_plan is not None:
+        points.update(max(0.0, min(scene.duration, float(beat.at))) for beat in scene.story_plan.beats)
+    return sorted(points)
 
-    Camera movement is deliberately bounded: no arbitrary shake, no random
-    zooms, and no dependence on an LLM. The dialogue/story timeline is the
-    source of shot intent.
-    """
+
+def camera_at(scene: CastScene, t: float, *, transition: float = 0.32) -> CameraState:
+    """Resolve a shot and ease into newly authored camera intent."""
     now = max(0.0, min(float(t), scene.duration))
     target = _target(scene, now)
-    if transition <= 0.0:
+    if transition <= 0.0 or now <= 0.0:
         return target
 
-    # Find the most recent point where the target camera intent changed.
-    probe = min(now, 0.05)
-    previous = _target(scene, max(0.0, now - transition),)
+    boundaries = _camera_boundaries(scene)
+    boundary = max((point for point in boundaries if point <= now), default=0.0)
+    elapsed = now - boundary
+    if boundary <= 0.0 or elapsed >= transition:
+        return target
+
+    previous = _target(scene, max(0.0, boundary - 0.001))
     if previous == target:
         return target
-    amount = min(1.0, probe / transition) if now < transition else 1.0
-    if now >= transition:
-        # Search backward just far enough to identify whether we are entering
-        # a new dialogue/story state. A coarse deterministic probe is enough
-        # because scene cues are authored at human-readable times.
-        previous = _target(scene, max(0.0, now - min(transition, 0.16)))
-        return _blend(previous, target, 0.72)
-    return _blend(previous, target, amount)
+    return _blend(previous, target, elapsed / transition)
 
 
 def apply_camera(image, camera: CameraState):
