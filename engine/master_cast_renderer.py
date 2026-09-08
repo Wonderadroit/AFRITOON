@@ -1,4 +1,4 @@
-"""Render a multi-character AFRITOON scene from canonical SVG masters."""
+"""Render a multi-character ITANRA scene from canonical SVG masters."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from typing import Mapping
 
 from PIL import Image, ImageDraw, ImageFilter
 
+from .camera_director import apply_camera, camera_at
 from .cast_scene import CastScene
 from .gaze import gaze_direction as _gaze_direction, interaction_strength as _interaction_strength
 from .performance_renderer import performance_for_character
@@ -58,7 +59,7 @@ def _character_shadow_layer(positions: Mapping[str, tuple[float, float, float]],
 
 
 def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Path = ".", positions: Mapping[str, tuple[float, float, float]] | None = None, character_width: int = 470) -> Image.Image:
-    """Compose canonical artwork with semantic performance and production layout."""
+    """Compose canonical artwork, performance, staging and camera."""
     canvas = render_background(scene.name, frame_time)
     state = scene.state_at(frame_time)
     overrides = positions or {}
@@ -102,4 +103,7 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
         else:
             artwork = rasterize_svg(resolved.path, width, height)
         canvas.alpha_composite(artwork, (int(x - artwork.width / 2), int(baseline - artwork.height)))
-    return canvas
+
+    # Camera is the final composition pass so it moves the complete scene,
+    # including shadows and background, rather than moving characters alone.
+    return apply_camera(canvas, camera_at(scene, frame_time))
