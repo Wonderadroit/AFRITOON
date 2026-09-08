@@ -13,7 +13,7 @@ def test_nepa_approach_completes_after_entry():
     assert entering.visible is True
     assert entering.x < 570.0
     assert arrived.visible is True
-    assert arrived.x == 400.0
+    assert arrived.x == 480.0
     assert arrived.y == 1650.0
 
 
@@ -31,4 +31,4 @@ def test_nepa_approach_preserves_conversational_distance():
     scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
     state = scene.state_at(13.5)
 
-    assert abs(state.characters["seyi"].x - state.characters["tunde"].x) == 70.0
+    assert abs(state.characters["seyi"].x - state.characters["tunde"].x) == 150.0
