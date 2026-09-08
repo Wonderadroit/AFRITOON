@@ -14,7 +14,7 @@ class StoryBlockingCue:
     y: float
     duration: float = 0.0
     target: str | None = None
-    interaction_distance: float = 70.0
+    interaction_distance: float = 150.0
 
     @property
     def to(self) -> tuple[float, float]:
@@ -31,7 +31,7 @@ def _target_id(text: str, available: set[str]) -> str | None:
 
 
 def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tuple[StoryBlockingCue, ...]:
-    """Create deterministic approach cues that end at conversational distance."""
+    """Create deterministic approach cues that end at a natural conversational distance."""
     available = set(positions)
     result: list[StoryBlockingCue] = []
     for beat in plan.beats:
@@ -48,8 +48,9 @@ def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tupl
             continue
         tx, _ = positions[target]
         ax, ay = positions[actor]
-        stop_x = conversational_stop_x(ax, tx, distance=70.0)
-        result.append(StoryBlockingCue(float(beat.at), actor, stop_x, float(ay), 1.0, target, 70.0))
+        distance = 150.0
+        stop_x = conversational_stop_x(ax, tx, distance=distance)
+        result.append(StoryBlockingCue(float(beat.at), actor, stop_x, float(ay), 1.0, target, distance))
     return tuple(result)
 
 
