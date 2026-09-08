@@ -24,5 +24,19 @@
 <g data-layer="left_brow"><path fill="none" stroke-width="9" d="M207 277 Q244 250 278 268"/></g>
 <g data-layer="right_brow"><path fill="none" stroke-width="9" d="M393 277 Q356 250 322 268"/></g>
 <g data-layer="nose"><path fill="none" stroke="#70432f" stroke-width="6" d="M300 333 L284 394 Q300 406 319 394"/><path fill="none" stroke="#70432f" stroke-width="4" d="M286 398 Q300 405 316 398"/></g>
-<g data-layer="mouth"><path fill="#f4f0e8" d="M252 425 Q300 439 348 421 Q343 466 300 472 Q261 468 252 425Z"/><path fill="none" stroke="#6f392f" stroke-width="4" d="M262 435 Q300 447 338 431"/></g>
+<g data-layer="mouth">
+  <g data-mouth="closed"><path fill="none" stroke="#6f392f" stroke-width="6" d="M264 438 Q300 438 336 438"/></g>
+  <g data-mouth="smile"><path fill="none" stroke="#6f392f" stroke-width="6" d="M258 430 Q300 458 342 426"/></g>
+  <g data-mouth="small_open"><path fill="#4b201b" stroke="#6f392f" stroke-width="5" d="M270 430 Q300 442 330 430 Q327 453 300 457 Q273 453 270 430Z"/></g>
+  <g data-mouth="open"><path fill="#3a1715" stroke="#6f392f" stroke-width="5" d="M258 427 Q300 446 342 425 Q338 470 300 476 Q262 470 258 427Z"/><path fill="#f4f0e8" stroke="none" d="M270 435 Q300 446 330 434 L326 444 Q300 451 274 443Z"/></g>
+  <g data-mouth="flat"><path fill="none" stroke="#6f392f" stroke-width="7" d="M266 439 L334 439"/></g>
+  <g data-mouth="tight"><path fill="none" stroke="#6f392f" stroke-width="8" d="M273 438 Q300 433 327 438"/></g>
+  <g data-mouth="sad"><path fill="none" stroke="#6f392f" stroke-width="6" d="M263 449 Q300 421 337 449"/></g>
+  <g data-mouth="wide_smile"><path fill="#f4f0e8" stroke="#6f392f" stroke-width="5" d="M252 427 Q300 451 348 422 Q343 466 300 473 Q257 466 252 427Z"/><path fill="none" stroke="#b98b78" stroke-width="3" d="M264 438 Q300 449 336 434"/></g>
+  <g data-mouth="talk_a"><path fill="#3a1715" stroke="#6f392f" stroke-width="5" d="M266 429 Q300 440 334 429 Q330 461 300 466 Q270 461 266 429Z"/></g>
+  <g data-mouth="talk_e"><path fill="#3a1715" stroke="#6f392f" stroke-width="5" d="M271 431 Q300 439 329 431 Q326 450 300 454 Q274 450 271 431Z"/></g>
+  <g data-mouth="talk_o"><ellipse cx="300" cy="444" rx="22" ry="28" fill="#3a1715" stroke="#6f392f" stroke-width="5"/></g>
+  <g data-mouth="talk_m"><path fill="none" stroke="#6f392f" stroke-width="8" d="M270 440 Q300 445 330 440"/></g>
+  <g data-mouth="talk_rest"><path fill="none" stroke="#6f392f" stroke-width="5" d="M269 438 Q300 441 331 438"/></g>
+</g>
 </g></svg>
