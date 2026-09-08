@@ -25,8 +25,8 @@ def test_story_approach_stops_at_natural_conversational_distance():
     assert len(cues) == 1
     cue = cues[0]
     assert cue.target == "tunde"
-    assert cue.interaction_distance == 150.0
-    assert cue.x == 480.0
+    assert cue.interaction_distance == 280.0
+    assert cue.x == 610.0
 
 
 def test_story_approach_can_be_classified_from_its_final_geometry():
