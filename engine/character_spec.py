@@ -96,7 +96,7 @@ CHARACTERS: Dict[str, CharacterDefinition] = {
             wardrobe="green_orange_patterned_dress_house_shoes",
             silhouette="strong_maternal_fuller_grounded_shape",
             head_ratio=1.08,
-            signature=("raised_eyebrow", "hands_on_hips", "knowing_look", "deep_sigh", "instant_interrogation"),
+            signature=("raised_eyebrow", "silent_stare", "hands_on_hips", "knowing_look", "deep_sigh", "instant_interrogation"),
             design_notes=(
                 "human-looking stylized 2D Nigerian matriarch",
                 "green-and-orange patterned headwrap and dress are stable recognition cues",
