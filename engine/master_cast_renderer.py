@@ -62,15 +62,8 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
     canvas = render_background(scene.name, frame_time)
     state = scene.state_at(frame_time)
     overrides = positions or {}
-    scene_positions = overrides or {
-        cid: (item.x, item.y, item.scale)
-        for cid, item in state.characters.items()
-    }
-    visible_positions = {
-        cid: (item.x, item.y, item.scale)
-        for cid, item in state.characters.items()
-        if item.visible
-    }
+    scene_positions = overrides or {cid: (item.x, item.y, item.scale) for cid, item in state.characters.items()}
+    visible_positions = {cid: (item.x, item.y, item.scale) for cid, item in state.characters.items() if item.visible}
     canvas = Image.alpha_composite(canvas, _character_shadow_layer(visible_positions, {cid: True for cid in visible_positions}))
 
     for character_id, instance in state.characters.items():
@@ -101,6 +94,7 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
                     motion_progress=performance.motion_progress,
                     gaze=gaze,
                     interaction_strength=strength,
+                    time=frame_time,
                 )
                 artwork = artwork.resize((width, height), Image.Resampling.LANCZOS)
             except (SVGRenderUnavailable, ValueError, OSError):
