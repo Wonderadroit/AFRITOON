@@ -75,7 +75,7 @@ CHARACTERS: Dict[str, CharacterDefinition] = {
             wardrobe="black_fitted_top_lilac_cargo_pants_sneakers",
             silhouette="slightly_taller_lean_feminine_observant",
             head_ratio=1.05,
-            signature=("side_eye", "dry_humor", "arms_crossed", "knowing_smile", "slow_head_turn"),
+            signature=("side_eye", "deadpan_stare", "dry_humor", "arms_crossed", "knowing_smile", "slow_head_turn"),
             design_notes=(
                 "human-looking stylized 2D young Nigerian woman",
                 "long braids are a stable recognition cue",
@@ -92,7 +92,7 @@ CHARACTERS: Dict[str, CharacterDefinition] = {
         id="mama", name="Mama", role="mother_matriarch", age_band="50_plus",
         personality=("strong", "caring", "funny", "straight_talking", "no_nonsense"),
         visual=CharacterVisual(
-            skin="medium_dark_brown", hair="patterned_headwrap",
+            skin="medium_dark_brown", hair="headwrap",
             wardrobe="green_orange_patterned_dress_house_shoes",
             silhouette="strong_maternal_fuller_grounded_shape",
             head_ratio=1.08,
