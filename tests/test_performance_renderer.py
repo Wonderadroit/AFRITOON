@@ -93,13 +93,13 @@ def test_speaker_focuses_on_visible_listener():
     assert state.focus == "tunde"
 
 
-def test_listener_keeps_strong_emotion_while_attending():
+def test_listener_keeps_current_emotion_while_attending():
     scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
     state = performance_for_character(scene, "tunde", 13.5)
-    assert state.expression == "shocked"
+    assert state.expression == "surprised"
 
 
-def test_hidden_speaker_is_not_an_attention_target():
+def test_hidden_actor_is_not_an_attention_target():
     scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
     state = performance_for_character(scene, "seyi", 8.0)
     assert state.focus is None
