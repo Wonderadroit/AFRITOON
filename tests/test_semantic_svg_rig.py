@@ -37,8 +37,8 @@ def test_character_pose_profiles_remain_distinct():
 def test_semantic_renderer_changes_pixels_between_poses():
     pytest.importorskip("cairosvg")
     path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
-    idle = render_semantic_character(path, "tunde", "idle")
-    dance = render_semantic_character(path, "tunde", "dance")
+    idle = render_semantic_character(path, "tunde", "idle", time=0.0)
+    dance = render_semantic_character(path, "tunde", "dance", time=0.0)
     assert idle.size == (600, 1100)
     assert dance.size == idle.size
     assert idle.tobytes() != dance.tobytes()
@@ -48,7 +48,7 @@ def test_semantic_renderer_supports_all_canonical_characters():
     pytest.importorskip("cairosvg")
     for character in ("tunde", "seyi", "mama"):
         path = ROOT / "assets" / "characters" / character / "art" / f"{character}_front.svg"
-        image = render_semantic_character(path, character, "idle")
+        image = render_semantic_character(path, character, "idle", time=1.0)
         assert image.size == (600, 1100)
         assert image.getbbox() is not None
 
@@ -57,8 +57,8 @@ def test_expression_changes_pixels_without_replacing_master_artwork():
     pytest.importorskip("cairosvg")
     path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
     master_before = path.read_text(encoding="utf-8")
-    neutral = render_semantic_character(path, "tunde", "idle", expression_name="neutral")
-    shocked = render_semantic_character(path, "tunde", "idle", expression_name="shocked")
+    neutral = render_semantic_character(path, "tunde", "idle", expression_name="neutral", time=1.0)
+    shocked = render_semantic_character(path, "tunde", "idle", expression_name="shocked", time=1.0)
     assert neutral.tobytes() != shocked.tobytes()
     assert path.read_text(encoding="utf-8") == master_before
 
@@ -66,16 +66,16 @@ def test_expression_changes_pixels_without_replacing_master_artwork():
 def test_mouth_timing_can_override_expression_mouth():
     pytest.importorskip("cairosvg")
     path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
-    closed = render_semantic_character(path, "tunde", "idle", expression_name="neutral", mouth_name="closed")
-    open_mouth = render_semantic_character(path, "tunde", "idle", expression_name="neutral", mouth_name="open")
+    closed = render_semantic_character(path, "tunde", "idle", expression_name="neutral", mouth_name="closed", time=1.0)
+    open_mouth = render_semantic_character(path, "tunde", "idle", expression_name="neutral", mouth_name="open", time=1.0)
     assert closed.tobytes() != open_mouth.tobytes()
 
 
 def test_target_aware_geometry_changes_head_and_body_without_new_artwork():
     pytest.importorskip("cairosvg")
     path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
-    center = render_semantic_character(path, "tunde", "idle", gaze="center")
-    right = render_semantic_character(path, "tunde", "idle", gaze="right")
+    center = render_semantic_character(path, "tunde", "idle", gaze="center", time=1.0)
+    right = render_semantic_character(path, "tunde", "idle", gaze="right", time=1.0)
     assert center.tobytes() != right.tobytes()
     assert center.size == right.size == (600, 1100)
     assert center.getbbox() is not None
@@ -85,8 +85,16 @@ def test_target_aware_geometry_changes_head_and_body_without_new_artwork():
 def test_target_aware_geometry_is_temporally_gated():
     pytest.importorskip("cairosvg")
     path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
-    anticipation = render_semantic_character(path, "tunde", "shock", gaze="right", phase="anticipation", motion_progress=0.0)
-    action = render_semantic_character(path, "tunde", "shock", gaze="right", phase="action", motion_progress=1.0)
-    recovery = render_semantic_character(path, "tunde", "shock", gaze="right", phase="recovery", motion_progress=0.9)
+    anticipation = render_semantic_character(path, "tunde", "shock", gaze="right", phase="anticipation", motion_progress=0.0, time=1.0)
+    action = render_semantic_character(path, "tunde", "shock", gaze="right", phase="action", motion_progress=1.0, time=1.0)
+    recovery = render_semantic_character(path, "tunde", "shock", gaze="right", phase="recovery", motion_progress=0.9, time=1.0)
     assert anticipation.tobytes() != action.tobytes()
     assert recovery.tobytes() != action.tobytes()
+
+
+def test_time_drives_subtle_life_motion():
+    pytest.importorskip("cairosvg")
+    path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
+    early = render_semantic_character(path, "tunde", "idle", time=0.0)
+    later = render_semantic_character(path, "tunde", "idle", time=1.0)
+    assert early.tobytes() != later.tobytes()
