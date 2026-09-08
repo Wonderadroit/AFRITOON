@@ -218,13 +218,18 @@ def performance_for_character(scene: CastScene, character, frame_time):
     else:
         phase, motion_progress = "hold", 1.0
 
-    if focus is None and scene.story_plan is not None:
-        story_cue = cue_at(cues_for(scene.story_plan, character), frame_time)
-        if story_cue is not None:
-            focus = story_cue.focus
-    if focus is None:
-        focus = _conversation_focus(scene, character, frame_time)
-    if pose == "look_at_camera":
+    if instance.visible:
+        if focus is None and scene.story_plan is not None:
+            story_cue = cue_at(cues_for(scene.story_plan, character), frame_time)
+            if story_cue is not None:
+                candidate = story_cue.focus
+                if candidate == "camera" or (candidate and state.characters.get(candidate) and state.characters[candidate].visible):
+                    focus = candidate
+        if focus is None:
+            focus = _conversation_focus(scene, character, frame_time)
+    else:
+        focus = None
+    if pose == "look_at_camera" and instance.visible:
         focus = "camera"
 
     return PerformanceState(
