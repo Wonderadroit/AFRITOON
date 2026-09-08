@@ -80,9 +80,10 @@ def test_shock_has_anticipation_before_dialogue_interrupts_it():
     assert after.pose == "talk"
 
 
-def test_listener_gazes_at_current_speaker():
+def test_listener_gazes_at_current_speaker_and_settles_to_listening_pose():
     scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
     state = performance_for_character(scene, "tunde", 13.5)
+    assert state.pose == "look"
     assert state.focus == "seyi"
 
 
@@ -90,3 +91,15 @@ def test_speaker_focuses_on_visible_listener():
     scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
     state = performance_for_character(scene, "seyi", 13.5)
     assert state.focus == "tunde"
+
+
+def test_listener_keeps_strong_emotion_while_attending():
+    scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
+    state = performance_for_character(scene, "tunde", 13.5)
+    assert state.expression == "shocked"
+
+
+def test_hidden_speaker_is_not_an_attention_target():
+    scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
+    state = performance_for_character(scene, "seyi", 8.0)
+    assert state.focus is None
