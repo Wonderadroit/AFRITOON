@@ -50,6 +50,8 @@ def _action_for(beat: StoryBeat) -> str:
         return "freeze"
     if any(word in text for word in ("check pocket", "check_pocket", "realize", "realizes", "recover")):
         return "check_pocket"
+    if any(word in text for word in ("expose", "exposes", "interrogate", "interrogation")):
+        return "angry"
     if any(word in text for word in ("enter", "enters", "comes in", "walks in")):
         return "turn"
     if any(word in text for word in ("talk", "speak", "say", "question")):
@@ -58,8 +60,6 @@ def _action_for(beat: StoryBeat) -> str:
         return "look"
     if any(word in text for word in APPROACH_WORDS):
         return "look"
-    if any(word in text for word in ("expose", "exposes", "interrogate", "interrogation")):
-        return "angry"
     if any(word in text for word in ("confirmation", "confirm", "silent reaction")):
         return "look"
     return "idle"
