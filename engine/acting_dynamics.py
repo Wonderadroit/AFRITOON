@@ -15,6 +15,7 @@ class MicroMotion:
     blink: float
     speech: float = 0.0
     head_tilt: float = 0.0
+    body_sway: float = 0.0
 
 
 def _pulse(t: float, period: float, width: float) -> float:
@@ -45,7 +46,7 @@ def micro_motion(
     speaking: bool = False,
     expression: str = "neutral",
 ) -> MicroMotion:
-    """Return deterministic breathing, weight, blink, speech and head cues."""
+    """Return deterministic breathing, weight, blink, speech, head and body cues."""
     cid = str(character).strip().lower()
     t = max(0.0, float(time))
     rhythm = {"tunde": 3.15, "seyi": 3.55, "mama": 4.05}.get(cid, 3.5)
@@ -81,10 +82,25 @@ def micro_motion(
         head_tilt *= 1.15
     head_tilt = max(-1.6, min(1.6, head_tilt))
 
+    # Body sway is deliberately smaller than the authored pose rotation. It
+    # gives idle/listening frames a shifting center of balance rather than a
+    # perfectly rigid cutout. Strong reactions stay more stable.
+    body_sway = math.sin((2.0 * math.pi * t / (rhythm * 1.35)) + phase_offset) * {
+        "tunde": 0.65,
+        "seyi": 0.45,
+        "mama": 0.30,
+    }.get(cid, 0.4)
+    if speaking:
+        body_sway += speech * 0.28
+    if expression_name in {"shocked", "surprised", "angry", "sad"}:
+        body_sway *= 0.45
+    body_sway = max(-1.0, min(1.0, body_sway))
+
     return MicroMotion(
         breath=breath,
         weight=weight,
         blink=blink,
         speech=speech,
         head_tilt=head_tilt,
+        body_sway=body_sway,
     )
