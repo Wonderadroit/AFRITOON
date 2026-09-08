@@ -17,7 +17,7 @@ from .svg_renderer import SVGRenderUnavailable, rasterize_svg
 from .view_policy import resolve_view
 
 W, H = 1080, 1920
-DEFAULT_POSITIONS = {"tunde": (280.0, 1500.0, 0.82), "seyi": (540.0, 1500.0, 0.78), "mama": (800.0, 1500.0, 0.88)}
+DEFAULT_POSITIONS = {"tunde": (300.0, 1650.0, 0.82), "seyi": (540.0, 1650.0, 0.78), "mama": (780.0, 1650.0, 0.88)}
 SOURCE_ASPECT = 1100.0 / 600.0
 
 
@@ -58,7 +58,7 @@ def _character_shadow_layer(positions: Mapping[str, tuple[float, float, float]],
     return shadow.filter(ImageFilter.GaussianBlur(14))
 
 
-def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Path = ".", positions: Mapping[str, tuple[float, float, float]] | None = None, character_width: int = 470) -> Image.Image:
+def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Path = ".", positions: Mapping[str, tuple[float, float, float]] | None = None, character_width: int = 390) -> Image.Image:
     """Compose canonical artwork, performance, staging and camera."""
     canvas = render_background(scene.name, frame_time)
     state = scene.state_at(frame_time)
@@ -75,7 +75,7 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
         elif instance.x != 540.0 or instance.y != 1150.0 or instance.scale != 1.0:
             x, baseline, scale = instance.x, instance.y, instance.scale
         else:
-            x, baseline, scale = DEFAULT_POSITIONS.get(character_id, (540.0, 1500.0, 0.8))
+            x, baseline, scale = DEFAULT_POSITIONS.get(character_id, (540.0, 1650.0, 0.8))
         resolved = resolve_view(repo_root, character_id, instance.view)
         width = max(1, int(character_width * scale)); height = max(1, int(round(width * SOURCE_ASPECT)))
         performance = performance_for_character(scene, character_id, frame_time)
