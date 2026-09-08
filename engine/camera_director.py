@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from PIL import Image as PILImage
+
 from .cast_scene import CastScene
 
 W, H = 1080.0, 1920.0
@@ -131,7 +133,7 @@ def camera_at(scene: CastScene, t: float, *, transition: float = 0.32) -> Camera
     return _blend(previous, target, elapsed / transition)
 
 
-def apply_camera(image, camera: CameraState):
+def apply_camera(image: PILImage.Image, camera: CameraState) -> PILImage.Image:
     """Apply a bounded camera crop while preserving the output resolution."""
     if camera.scale <= 1.0001:
         return image
@@ -149,4 +151,4 @@ def apply_camera(image, camera: CameraState):
         int(round(top + crop_h)),
     )
     cropped = image.crop(box)
-    return cropped.resize((width, height), image.Resampling.LANCZOS)
+    return cropped.resize((width, height), PILImage.Resampling.LANCZOS)
