@@ -35,24 +35,36 @@ COMMON = {
     "check_pocket": {"left_arm": Transform(245, 665, 42), "right_arm": Transform(370, 660, -25), "torso": Transform(300, 650, 2)},
     "shock": {"left_arm": Transform(175, 570, -40), "right_arm": Transform(425, 570, 40), "head": Transform(300, 315, 0, 1.04), "torso": Transform(300, 650, 0, 0.98)},
     "shocked": {"left_arm": Transform(175, 570, -40), "right_arm": Transform(425, 570, 40), "head": Transform(300, 315, 0, 1.04), "torso": Transform(300, 650, 0, 0.98)},
-    "shrug": {"left_arm": Transform(180, 585, -25), "right_arm": Transform(420, 585, 25)}, "freeze": {},
+    "shrug": {"left_arm": Transform(180, 585, -25), "right_arm": Transform(420, 585, 25)},
+    "freeze": {},
 }
 
 CHARACTER_OVERRIDES = {
-    "tunde": {"talk": {"torso": Transform(300, 645, -1, 1.02)}, "look_at_camera": {"head": Transform(300, 328, 0, 1.01)}},
-    "seyi": {"idle": {"torso": Transform(300, 655, -2)}, "look": {"head": Transform(304, 330, 2)}, "look_at_camera": {"head": Transform(300, 332, 0, 1.01)}, "laugh": {"head": Transform(300, 327, -2)}},
-    "mama": {"idle": {"torso": Transform(300, 660), "legs": Transform(300, 880)}, "talk": {"torso": Transform(300, 655, -1, 1.02)}, "angry": {"left_arm": Transform(180, 600, -25), "right_arm": Transform(420, 600, 25), "torso": Transform(300, 650, 1, 1.02)}, "look_at_camera": {"head": Transform(300, 328, 0, 1.02)}},
+    "tunde": {
+        "talk": {"torso": Transform(300, 645, -1, 1.02), "left_arm": Transform(202, 606, -12), "right_arm": Transform(424, 620, 8)},
+        "look_at_camera": {"head": Transform(300, 328, 0, 1.01)},
+        "laugh": {"head": Transform(300, 325, -3), "left_arm": Transform(185, 590, -20)},
+    },
+    "seyi": {
+        "idle": {"torso": Transform(300, 655, -2)},
+        "look": {"head": Transform(304, 330, 2), "left_arm": Transform(205, 640, 8)},
+        "talk": {"torso": Transform(300, 652, -1), "left_arm": Transform(205, 620, -8), "right_arm": Transform(417, 650, 5)},
+        "look_at_camera": {"head": Transform(300, 332, 0, 1.01)},
+        "laugh": {"head": Transform(300, 327, -2), "left_arm": Transform(205, 610, -10)},
+    },
+    "mama": {
+        "idle": {"torso": Transform(300, 660), "legs": Transform(300, 880)},
+        "talk": {"torso": Transform(300, 655, -1, 1.02), "left_arm": Transform(192, 620, -8), "right_arm": Transform(415, 635, 10)},
+        "angry": {"left_arm": Transform(190, 635, -18), "right_arm": Transform(407, 600, 28), "torso": Transform(300, 650, 1, 1.02)},
+        "look": {"head": Transform(304, 332, 2), "right_arm": Transform(420, 650, 6)},
+        "look_at_camera": {"head": Transform(300, 328, 0, 1.02)},
+    },
 }
 
 
 def _interpolate(a: Transform, b: Transform, amount: float) -> Transform:
     p = max(0.0, min(1.0, float(amount)))
-    return Transform(
-        x=a.x + (b.x - a.x) * p,
-        y=a.y + (b.y - a.y) * p,
-        rotation=a.rotation + (b.rotation - a.rotation) * p,
-        scale=a.scale + (b.scale - a.scale) * p,
-    )
+    return Transform(x=a.x + (b.x - a.x) * p, y=a.y + (b.y - a.y) * p, rotation=a.rotation + (b.rotation - a.rotation) * p, scale=a.scale + (b.scale - a.scale) * p)
 
 
 def pose_for(character_id: str, pose: str, *, origin_x: float = 0, origin_y: float = 0, scale: float = 1.0) -> CharacterPose:
@@ -69,7 +81,6 @@ def pose_for(character_id: str, pose: str, *, origin_x: float = 0, origin_y: flo
 
 
 def pose_for_phase(character_id: str, pose: str, phase: str, *, origin_x: float = 0, origin_y: float = 0, scale: float = 1.0) -> CharacterPose:
-    """Resolve an authored pose through temporal acting phases."""
     target = pose_for(character_id, pose, origin_x=origin_x, origin_y=origin_y, scale=scale)
     idle = pose_for(character_id, "idle", origin_x=origin_x, origin_y=origin_y, scale=scale)
     amount = {"anticipation": 0.35, "action": 1.0, "hold": 1.0, "recovery": 0.45}.get(phase, 0.0)
@@ -78,7 +89,6 @@ def pose_for_phase(character_id: str, pose: str, phase: str, *, origin_x: float 
 
 
 def pose_for_motion(character_id: str, pose: str, amount: float, *, origin_x: float = 0, origin_y: float = 0, scale: float = 1.0) -> CharacterPose:
-    """Resolve an authored pose at a continuous idle-to-action blend."""
     target = pose_for(character_id, pose, origin_x=origin_x, origin_y=origin_y, scale=scale)
     idle = pose_for(character_id, "idle", origin_x=origin_x, origin_y=origin_y, scale=scale)
     layers = {name: _interpolate(idle.layers[name], target.layers[name], amount) for name in BASE}
