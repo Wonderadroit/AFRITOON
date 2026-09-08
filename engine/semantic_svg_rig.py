@@ -89,7 +89,7 @@ def _layer_svgs_cached(master_name: str, expression_name: str, mouth_name: str |
 
 
 def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0, blink: float = 0.0) -> dict[str, str]:
-    return dict(_layer_svgs_cached(str(master.resolve()), expression_name, mouth_name, gaze, phase, _quantize(motion_progress, 0.08), _quantize(interaction_strength, 0.05), _quantize(blink, 0.25)))
+    return dict(_layer_svgs_cached(str(master.resolve()), expression_name, mouth_name, gaze, phase, _quantize(motion_progress, 0.08), _quantize(interaction_strength, 0.05), _quantize(blink, 0.10)))
 
 
 @lru_cache(maxsize=1024)
@@ -126,12 +126,15 @@ def _transform_layer(layer: Image.Image, *, target_anchor: tuple[float, float], 
     return cropped, (round(target_anchor[0] - cropped.width / 2), round(target_anchor[1] - cropped.height / 2))
 
 
-def render_semantic_character(master: str | Path, character_id: str, pose: str, scale: float = 1.0, expression_name: str = "neutral", mouth_name: str | None = None, phase: str = "hold", motion_progress: float | None = None, gaze: str = "center", interaction_strength: float = 1.0, time: float = 0.0) -> Image.Image:
+def render_semantic_character(master: str | Path, character_id: str, pose: str, scale: float = 1.0, expression_name: str = "neutral", mouth_name: str | None = None, phase: str = "hold", motion_progress: float | None = None, gaze: str = "center", interaction_strength: float = 1.0, time: float = 0.0, attention: bool | None = None, speaking: bool | None = None) -> Image.Image:
     """Render canonical artwork with authored performance plus subtle life motion."""
     master_path = Path(master)
     effective_progress = 1.0 if motion_progress is None else motion_progress
     effective_strength = max(0.0, min(1.0, float(interaction_strength)))
-    dynamics = micro_motion(character_id, time)
+    active_mouth = mouth_name or expression(expression_name).mouth
+    is_speaking = bool(speaking) if speaking is not None else active_mouth not in {"closed", "talk_rest"}
+    is_attentive = bool(attention) if attention is not None else gaze != "center"
+    dynamics = micro_motion(character_id, time, attention=is_attentive, speaking=is_speaking, expression=expression_name)
     groups = _layer_svgs(master_path, expression_name=expression_name, mouth_name=mouth_name, gaze=gaze, phase=phase, motion_progress=effective_progress, interaction_strength=effective_strength, blink=dynamics.blink)
     if not groups:
         raise ValueError(f"Master artwork has no semantic layers: {master_path}")
@@ -144,6 +147,7 @@ def render_semantic_character(master: str | Path, character_id: str, pose: str, 
     _, body_turn = _interaction_geometry(gaze, phase, effective_progress, effective_strength)
     breath = dynamics.breath
     weight = dynamics.weight
+    speech = dynamics.speech
     for layer_name in LAYER_NAMES:
         svg = groups.get(layer_name)
         if not svg:
@@ -160,9 +164,13 @@ def render_semantic_character(master: str | Path, character_id: str, pose: str, 
         if layer_name in {"torso", "left_arm", "right_arm", "legs"}:
             target_y += breath * 1.25
             target_x += weight * 1.25
+            if is_speaking:
+                target_y += speech * 0.65
         elif layer_name in {"head", "ears", "front_hair", "left_eye", "right_eye", "left_brow", "right_brow", "nose", "mouth"}:
             target_y += breath * 0.75
             target_x += weight * 0.55
+            if is_speaking and layer_name in {"head", "ears", "front_hair"}:
+                target_y += speech * 0.45
         body_rotation = body_turn if layer_name in {"torso", "left_arm", "right_arm"} else 0.0
         micro_scale = 1.0 + (0.004 * breath if layer_name == "torso" else 0.0)
         transformed, position = _transform_layer(layer, target_anchor=(target_x, target_y), rotation=current.rotation + body_rotation, scale=current.scale * micro_scale)
