@@ -14,7 +14,7 @@ class StoryBlockingCue:
     y: float
     duration: float = 0.0
     target: str | None = None
-    interaction_distance: float = 150.0
+    interaction_distance: float = 280.0
 
     @property
     def to(self) -> tuple[float, float]:
@@ -48,7 +48,7 @@ def cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float]]) -> tupl
             continue
         tx, _ = positions[target]
         ax, ay = positions[actor]
-        distance = 150.0
+        distance = 280.0
         stop_x = conversational_stop_x(ax, tx, distance=distance)
         result.append(StoryBlockingCue(float(beat.at), actor, stop_x, float(ay), 1.0, target, distance))
     return tuple(result)
@@ -71,9 +71,6 @@ def entry_exit_cues_for(plan: StoryPlan, positions: dict[str, tuple[float, float
         if any(word in text for word in enter_words):
             result.append(EntryExitCue(float(beat.at), actor, "enter", _offscreen_start(positions[actor], positions), 1.0))
         elif any(word in text for word in exit_words):
-            # A collective subject such as "everybody leaves" describes the
-            # surrounding cast, not the beat's named character. Do not invent
-            # an exit for the character merely because an exit verb is present.
             if any(subject in text for subject in collective_subjects):
                 continue
             result.append(EntryExitCue(float(beat.at), actor, "exit", _offscreen_exit(positions[actor], positions), 1.0))
