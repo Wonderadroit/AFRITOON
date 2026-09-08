@@ -52,3 +52,23 @@ def test_master_renderer_produces_different_performance_frames():
     assert first.size == (1080, 1920)
     assert later.size == first.size
     assert first.tobytes() != later.tobytes()
+
+
+def test_shock_has_anticipation_before_dialogue_interrupts_it():
+    scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
+    early = performance_for_character(scene, "tunde", 7.35)
+    after = performance_for_character(scene, "tunde", 7.95)
+    assert early.pose == "shock"
+    assert after.pose == "talk"
+
+
+def test_listener_gazes_at_current_speaker():
+    scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
+    state = performance_for_character(scene, "tunde", 13.5)
+    assert state.focus == "seyi"
+
+
+def test_speaker_focuses_on_visible_listener():
+    scene = CastScene.from_yaml(Path("scenes/nepa_please.yaml"))
+    state = performance_for_character(scene, "seyi", 13.5)
+    assert state.focus == "tunde"
