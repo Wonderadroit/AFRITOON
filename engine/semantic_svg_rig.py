@@ -71,6 +71,10 @@ def _quantize(value: float, step: float) -> float:
 def _layer_svgs_cached(master_name: str, expression_name: str, mouth_name: str | None, gaze: str, phase: str, motion_progress: float, interaction_strength: float, blink: float) -> tuple[tuple[str, str], ...]:
     master = Path(master_name)
     root = ET.fromstring(master.read_text(encoding="utf-8"))
+    # Each semantic layer is rasterized as a standalone SVG. Preserve the
+    # master <defs> in every wrapper so gradients, patterns and other paint
+    # servers remain intact instead of silently disappearing at runtime.
+    defs = [ET.fromstring(ET.tostring(node, encoding="unicode")) for node in root if _svg_namespace(node.tag) == "defs"]
     groups: dict[str, str] = {}
     for node in root.iter():
         if _svg_namespace(node.tag) != "g":
@@ -79,6 +83,8 @@ def _layer_svgs_cached(master_name: str, expression_name: str, mouth_name: str |
         if not layer:
             continue
         wrapper = ET.Element(f"{{{SVG_NS}}}svg", {"viewBox": f"0 0 {SOURCE_W} {SOURCE_H}"})
+        for definition in defs:
+            wrapper.append(ET.fromstring(ET.tostring(definition, encoding="unicode")))
         wrapper_group = ET.fromstring(ET.tostring(node, encoding="unicode"))
         transform = _face_transform(expression_name, layer, mouth_name, gaze, phase, motion_progress, interaction_strength, blink)
         if transform:
