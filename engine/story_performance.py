@@ -1,4 +1,4 @@
-"""Translate story beats into deterministic performance cues."""
+"""Translate story beats into deterministic, time-bounded performance cues."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -79,6 +79,11 @@ def _focus_for(beat: StoryBeat, actor: str, available: set[str]) -> str | None:
     return None
 
 
+def _cue_duration(character_id: str, action: str) -> float:
+    """Every authored story action gets a finite acting window."""
+    return timing_for(character_id, action).total
+
+
 def _reaction_cues_for(plan: StoryPlan, character_id: str) -> list[StoryPerformanceCue]:
     result: list[StoryPerformanceCue] = []
     target_definition = character(character_id)
@@ -95,7 +100,7 @@ def _reaction_cues_for(plan: StoryPlan, character_id: str) -> list[StoryPerforma
                 continue
             result.append(StoryPerformanceCue(
                 float(beat.at) + float(delay), target_definition.id, action, expression,
-                timing_for(target_definition.id, action).total, source,
+                _cue_duration(target_definition.id, action), source,
             ))
 
         text = f"{beat.event} {beat.intent or ''}".lower()
@@ -108,7 +113,7 @@ def _reaction_cues_for(plan: StoryPlan, character_id: str) -> list[StoryPerforma
                     target_definition.id,
                     "look",
                     expression,
-                    timing_for(target_definition.id, "look").total,
+                    _cue_duration(target_definition.id, "look"),
                     source,
                 ))
     return result
@@ -128,7 +133,9 @@ def cues_for(plan: StoryPlan, character_id: str) -> tuple[StoryPerformanceCue, .
         if expression not in definition.expressions:
             expression = definition.default_expression
         result.append(StoryPerformanceCue(
-            beat.at, definition.id, action, expression, focus=_focus_for(beat, definition.id, available)
+            beat.at, definition.id, action, expression,
+            _cue_duration(definition.id, action),
+            _focus_for(beat, definition.id, available),
         ))
     result.extend(_reaction_cues_for(plan, definition.id))
     result.sort(key=lambda cue: cue.at)
