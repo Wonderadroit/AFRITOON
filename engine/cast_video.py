@@ -22,7 +22,9 @@ def render_video(
     """Render scene frames and stream them to FFmpeg.
 
     Audio is optional and must be supplied separately; AFRITOON never bundles
-    copyrighted music into the repository.
+    copyrighted music into the repository. When supplied, audio is padded or
+    trimmed to the authored scene duration so the render cannot silently end
+    early because a voice file is shorter than the picture.
     """
     if shutil.which("ffmpeg") is None:
         raise RuntimeError("FFmpeg was not found. Install it with: pkg install ffmpeg")
@@ -38,10 +40,11 @@ def render_video(
         "-r", str(fps), "-i", "-",
     ]
     if audio is not None:
-        command += ["-i", str(audio), "-shortest"]
+        command += ["-i", str(audio), "-af", "apad"]
     command += [
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
-        "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(destination),
+        "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+        "-t", f"{scene.duration:.3f}", str(destination),
     ]
 
     process = subprocess.Popen(command, stdin=subprocess.PIPE)
