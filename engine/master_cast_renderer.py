@@ -58,6 +58,13 @@ def _character_shadow_layer(positions: Mapping[str, tuple[float, float, float]],
     return shadow.filter(ImageFilter.GaussianBlur(14))
 
 
+def _artwork_width(camera_shot: str, requested: int) -> int:
+    """Give short-form portraits enough screen presence without crowding ensembles."""
+    if requested != 390:
+        return max(1, int(requested))
+    return {"wide": 410, "medium": 455, "close": 515}.get(camera_shot, 410)
+
+
 def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Path = ".", positions: Mapping[str, tuple[float, float, float]] | None = None, character_width: int = 390) -> Image.Image:
     """Compose canonical artwork, performance, staging and camera."""
     canvas = render_background(scene.name, frame_time)
@@ -67,6 +74,7 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
     visible_positions = {cid: (item.x, item.y, item.scale) for cid, item in state.characters.items() if item.visible}
     canvas = Image.alpha_composite(canvas, _character_shadow_layer(visible_positions, {cid: True for cid in visible_positions}))
 
+    camera = camera_at(scene, frame_time)
     for character_id, instance in state.characters.items():
         if not instance.visible:
             continue
@@ -77,11 +85,14 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
         else:
             x, baseline, scale = DEFAULT_POSITIONS.get(character_id, (540.0, 1650.0, 0.8))
         resolved = resolve_view(repo_root, character_id, instance.view)
-        width = max(1, int(character_width * scale)); height = max(1, int(round(width * SOURCE_ASPECT)))
+        width = max(1, int(_artwork_width(camera.shot, character_width) * scale))
+        height = max(1, int(round(width * SOURCE_ASPECT)))
         performance = performance_for_character(scene, character_id, frame_time)
         focus = _temporal_gaze(performance.focus, performance.phase, performance.motion_progress)
         gaze = gaze_direction(character_id, focus, scene_positions)
         strength = _interaction_strength(character_id, focus, scene_positions)
+        dialogue = scene.dialogue_at(frame_time)
+        is_speaking = dialogue is not None and dialogue.character == character_id
         if _has_semantic_layers(resolved.path):
             try:
                 artwork = render_semantic_character(
@@ -96,6 +107,8 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
                     gaze=gaze,
                     interaction_strength=strength,
                     time=frame_time,
+                    attention=focus is not None,
+                    speaking=is_speaking,
                 )
                 artwork = artwork.resize((width, height), Image.Resampling.LANCZOS)
             except (SVGRenderUnavailable, ValueError, OSError):
@@ -106,4 +119,4 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
 
     # Camera is the final composition pass so it moves the complete scene,
     # including shadows and background, rather than moving characters alone.
-    return apply_camera(canvas, camera_at(scene, frame_time))
+    return apply_camera(canvas, camera)
