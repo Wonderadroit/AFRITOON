@@ -63,17 +63,29 @@ def _face_transform(expression_name: str, layer: str, mouth_name: str | None = N
     return " ".join(transforms) or None
 
 
-def _quantize(value: float, step: float) -> float:
-    return round(round(float(value) / step) * step, 4)
+def _set_mouth_variant_visibility(root: ET.Element, mouth_name: str | None) -> None:
+    """Select one authored mouth shape without changing non-mouth artwork.
+
+    Masters that predate authored variants are left untouched. This makes the
+    renderer backward-compatible while allowing production masters to contain
+    real lip shapes instead of stretching one bitmap-like mouth.
+    """
+    variants = [
+        node for node in root.iter()
+        if node.attrib.get("data-mouth")
+    ]
+    if not variants:
+        return
+    names = {node.attrib["data-mouth"] for node in variants}
+    selected = mouth_name if mouth_name in names else next(iter(names))
+    for node in variants:
+        node.set("display", "inline" if node.attrib.get("data-mouth") == selected else "none")
 
 
 @lru_cache(maxsize=1024)
 def _layer_svgs_cached(master_name: str, expression_name: str, mouth_name: str | None, gaze: str, phase: str, motion_progress: float, interaction_strength: float, blink: float) -> tuple[tuple[str, str], ...]:
     master = Path(master_name)
     root = ET.fromstring(master.read_text(encoding="utf-8"))
-    # Each semantic layer is rasterized as a standalone SVG. Preserve the
-    # master <defs> in every wrapper so gradients, patterns and other paint
-    # servers remain intact instead of silently disappearing at runtime.
     defs = [ET.fromstring(ET.tostring(node, encoding="unicode")) for node in root if _svg_namespace(node.tag) == "defs"]
     groups: dict[str, str] = {}
     for node in root.iter():
@@ -86,12 +98,18 @@ def _layer_svgs_cached(master_name: str, expression_name: str, mouth_name: str |
         for definition in defs:
             wrapper.append(ET.fromstring(ET.tostring(definition, encoding="unicode")))
         wrapper_group = ET.fromstring(ET.tostring(node, encoding="unicode"))
+        if layer == "mouth":
+            _set_mouth_variant_visibility(wrapper_group, mouth_name or expression(expression_name).mouth)
         transform = _face_transform(expression_name, layer, mouth_name, gaze, phase, motion_progress, interaction_strength, blink)
         if transform:
             wrapper_group.set("transform", transform)
         wrapper.append(wrapper_group)
         groups[layer] = ET.tostring(wrapper, encoding="unicode")
     return tuple(groups.items())
+
+
+def _quantize(value: float, step: float) -> float:
+    return round(round(float(value) / step) * step, 4)
 
 
 def _layer_svgs(master: Path, expression_name: str = "neutral", mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0, blink: float = 0.0) -> dict[str, str]:
