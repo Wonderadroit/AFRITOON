@@ -50,24 +50,24 @@ scene:
         payoff: true
   characters:
     - id: tunde
-      position: [330, 1450]
-      scale: 1.0
+      position: [330, 1650]
+      scale: 0.92
     - id: seyi
-      position: [570, 1450]
-      scale: 0.95
+      position: [570, 1650]
+      scale: 0.86
     - id: mama
-      position: [810, 1450]
-      scale: 1.05
+      position: [810, 1650]
+      scale: 0.94
   blocking:
     - at: 12.0
       character: seyi
       action: enter
-      from: [-180, 1450]
+      from: [-180, 1650]
       duration: 0.8
     - at: 18.0
       character: mama
       action: enter
-      from: [-180, 1450]
+      from: [-180, 1650]
       duration: 0.6
   beats:
     - at: 0.0
