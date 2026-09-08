@@ -7,6 +7,7 @@ from typing import Mapping
 
 from PIL import Image, ImageDraw, ImageFilter
 
+from .acting_dynamics import micro_motion
 from .camera_director import apply_camera, camera_at
 from .cast_scene import CastScene
 from .gaze import gaze_direction as _gaze_direction, interaction_strength as _interaction_strength
@@ -111,6 +112,22 @@ def render_master_cast(scene: CastScene, frame_time: float, repo_root: str | Pat
                     speaking=is_speaking,
                 )
                 artwork = artwork.resize((width, height), Image.Resampling.LANCZOS)
+                # Apply the final, very small balance shift after all authored
+                # layer motion. This keeps the center of gravity alive while
+                # leaving strong poses in control of the silhouette.
+                dynamics = micro_motion(
+                    character_id,
+                    frame_time,
+                    attention=focus is not None,
+                    speaking=is_speaking,
+                    expression=performance.expression,
+                )
+                if dynamics.body_sway:
+                    artwork = artwork.rotate(
+                        dynamics.body_sway,
+                        resample=Image.Resampling.BICUBIC,
+                        expand=False,
+                    )
             except (SVGRenderUnavailable, ValueError, OSError):
                 artwork = rasterize_svg(resolved.path, width, height)
         else:
