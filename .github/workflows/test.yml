@@ -17,6 +17,8 @@ jobs:
         run: pip install -r requirements.txt
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Validate character production assets
+        run: python tools/validate_characters.py
       - name: Run tests
         env:
           PYTHONPATH: .
