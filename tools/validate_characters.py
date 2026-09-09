@@ -13,6 +13,10 @@ LAYERS = (
     "neck", "head", "ears", "front_hair", "left_eye", "right_eye",
     "left_brow", "right_brow", "nose", "mouth",
 )
+MOUTH_VARIANTS = {
+    "closed", "smile", "small_open", "open", "flat", "tight", "sad",
+    "wide_smile", "talk_a", "talk_e", "talk_o", "talk_m", "talk_rest",
+}
 
 
 def _semantic_layers(path: Path) -> tuple[str, ...]:
@@ -22,6 +26,31 @@ def _semantic_layers(path: Path) -> tuple[str, ...]:
         for node in root.iter()
         if node.tag.rsplit("}", 1)[-1] == "g" and "data-layer" in node.attrib
     )
+
+
+def _mouth_variants(path: Path) -> set[str]:
+    root = ET.fromstring(path.read_text(encoding="utf-8"))
+    mouth_layers = [
+        node for node in root.iter()
+        if node.tag.rsplit("}", 1)[-1] == "g" and node.attrib.get("data-layer") == "mouth"
+    ]
+    return {
+        node.attrib["data-mouth"]
+        for layer in mouth_layers
+        for node in layer.iter()
+        if "data-mouth" in node.attrib
+    }
+
+
+def _has_pupil(path: Path, layer_name: str) -> bool:
+    root = ET.fromstring(path.read_text(encoding="utf-8"))
+    for layer in root.iter():
+        if layer.tag.rsplit("}", 1)[-1] != "g" or layer.attrib.get("data-layer") != layer_name:
+            continue
+        for node in layer.iter():
+            if node.tag.rsplit("}", 1)[-1] == "ellipse" and node.attrib.get("fill", "").lower() == "#171717":
+                return True
+    return False
 
 
 def main() -> int:
@@ -34,6 +63,7 @@ def main() -> int:
 
         try:
             layers = _semantic_layers(front)
+            mouth_variants = _mouth_variants(front)
         except (ET.ParseError, OSError) as exc:
             errors.append(f"{cid}: invalid front SVG: {exc}")
             continue
@@ -48,9 +78,19 @@ def main() -> int:
         if unknown:
             errors.append(f"{cid}: unknown semantic layers: {', '.join(unknown)}")
 
+        missing_mouths = sorted(MOUTH_VARIANTS - mouth_variants)
+        if missing_mouths:
+            errors.append(f"{cid}: missing mouth variants: {', '.join(missing_mouths)}")
+        for eye in ("left_eye", "right_eye"):
+            if not _has_pupil(front, eye):
+                errors.append(f"{cid}: {eye} has no authored pupil ellipse")
+
         layer_root = ROOT / "assets" / "characters" / cid / "layers" / "front"
         built = sum((layer_root / f"{layer}.svg").exists() for layer in LAYERS)
-        print(f"{cid}: master=yes semantic_layers={len(layers)}/16 built_layers={built}/16")
+        print(
+            f"{cid}: master=yes semantic_layers={len(layers)}/16 "
+            f"built_layers={built}/16 mouth_variants={len(mouth_variants)}/13 pupils=yes"
+        )
 
         for view in VIEWS:
             if view == "front":
