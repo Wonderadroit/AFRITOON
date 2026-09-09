@@ -1,7 +1,7 @@
 # ITANRA Character Bible
 
 **Status:** Canonical production specification  
-**Version:** 2.0  
+**Version:** 2.1  
 **Scope:** Tunde, Seyi and Mama recurring universe
 
 ## Purpose
@@ -252,13 +252,15 @@ Episode-specific scenes may change **performance**, but may not redefine **ident
 
 ## Production asset status
 
-The approved reference direction is locked as follows:
+The canonical front masters have now been refreshed to implement the locked visual direction:
 
-- Tunde: black hoodie, cargo trousers, short textured low-fade.
-- Seyi: young Nigerian woman, long braids, gold hoops, black top, lilac cargo trousers.
+- Tunde: black hoodie, gold crown/graphic, olive cargo trousers, short textured low-fade.
+- Seyi: young Nigerian woman, long black braids, gold hoops, black top, lilac cargo trousers.
 - Mama: Nigerian matriarch, green-and-orange patterned headwrap and dress.
 
-The existing SVG masters and semantic layer pipeline remain engine infrastructure, but they must be re-authored/updated to match this locked visual direction before they are treated as final production artwork. No fake turnaround views should be generated from the old masters.
+The front masters are deterministic SVG source artwork and resolve through the 16-layer semantic rig. Authored mouth variants, expression transforms, pupil-led gaze, character-specific gestures and deterministic micro-acting are runtime performance layers rather than identity changes.
+
+Genuine three-quarter and side masters are still intentionally absent. The view policy explicitly falls back to the canonical front master until those views are separately authored and validated; the engine must never fake a turnaround by skewing the front artwork.
 
 ## Production principle
 
