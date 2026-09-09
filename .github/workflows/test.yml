@@ -29,10 +29,25 @@ jobs:
           python tools/render_frame.py scenes/nepa_please.yaml --time 13 --output output/nepa-checkpoints/13.png
           python tools/render_frame.py scenes/nepa_please.yaml --time 19 --output output/nepa-checkpoints/19.png
           python tools/render_frame.py scenes/nepa_please.yaml --time 22 --output output/nepa-checkpoints/22.png
-      - name: Upload NEPA visual checkpoints
+      - name: Render end-to-end MP4 smoke test
+        env:
+          PYTHONPATH: .
+        run: |
+          python tools/render_scene.py scenes/trio_showcase.yaml --output output/trio-smoke.mp4 --fps 12
+          test -s output/trio-smoke.mp4
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 output/trio-smoke.mp4 > output/trio-duration.txt
+          python - <<'PY'
+          from pathlib import Path
+          duration = float(Path("output/trio-duration.txt").read_text().strip())
+          assert 5.8 <= duration <= 6.2, duration
+          PY
+      - name: Upload visual and video checkpoints
         uses: actions/upload-artifact@v4
         with:
-          name: itanra-nepa-visual-checkpoints
-          path: output/nepa-checkpoints/
+          name: itanra-render-checkpoints
+          path: |
+            output/nepa-checkpoints/
+            output/trio-smoke.mp4
+            output/trio-duration.txt
           if-no-files-found: error
           retention-days: 14
