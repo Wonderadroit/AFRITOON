@@ -32,6 +32,28 @@ def _interaction_geometry(gaze: str, phase: str, motion_progress: float, strengt
     return direction * 3.0 * amount, direction * 1.0 * amount
 
 
+def _pupil_gaze_shift(gaze: str, phase: str, motion_progress: float, strength: float) -> float:
+    """Return a small relative pupil shift while the eye whites stay planted."""
+    direction = {"left": -1.0, "right": 1.0, "center": 0.0}.get(gaze, 0.0)
+    progress = max(0.0, min(1.0, float(motion_progress)))
+    strength = max(0.0, min(1.0, float(strength)))
+    phase_amount = {"anticipation": 0.0, "action": progress, "hold": 1.0, "recovery": max(0.0, 1.0 - progress)}.get(phase, progress)
+    return direction * 7.0 * phase_amount * strength
+
+
+def _set_pupil_gaze(root: ET.Element, gaze: str, phase: str, motion_progress: float, strength: float) -> None:
+    """Move dark pupil ellipses inside an eye without moving the eyeball."""
+    shift = _pupil_gaze_shift(gaze, phase, motion_progress, strength)
+    if not shift:
+        return
+    transform = f"translate({shift:.3f} 0)"
+    for node in root.iter():
+        if _svg_namespace(node.tag) != "ellipse":
+            continue
+        if node.attrib.get("fill", "").lower() == "#171717":
+            node.set("transform", transform)
+
+
 def _face_transform(expression_name: str, layer: str, mouth_name: str | None = None, gaze: str = "center", phase: str = "hold", motion_progress: float = 1.0, interaction_strength: float = 1.0, blink: float = 0.0, head_tilt: float = 0.0) -> str | None:
     state = expression(expression_name)
     transforms: list[str] = []
@@ -46,9 +68,6 @@ def _face_transform(expression_name: str, layer: str, mouth_name: str | None = N
         if blink > 0.0:
             eye_scale_y *= max(0.12, 1.0 - 0.88 * min(1.0, blink))
         transforms.append(f"translate(0 330) scale(1 {eye_scale_y}) translate(0 -330)")
-        gaze_shift = {"left": -9.0, "right": 9.0, "center": 0.0}.get(gaze, 0.0) * max(0.0, min(1.0, float(interaction_strength)))
-        if gaze_shift:
-            transforms.append(f"translate({gaze_shift} 0)")
     if layer in {"left_brow", "right_brow"}:
         brow_angle = {"normal": 0.0, "raised": 4.0 if layer == "left_brow" else -4.0, "flat": 0.0, "furrowed": -9.0 if layer == "left_brow" else 9.0, "raised_inner": -5.0 if layer == "left_brow" else 5.0}.get(state.brows, 0.0)
         if state.brows == "flat":
@@ -92,6 +111,8 @@ def _layer_svgs_cached(master_name: str, expression_name: str, mouth_name: str |
         wrapper_group = ET.fromstring(ET.tostring(node, encoding="unicode"))
         if layer == "mouth":
             _set_mouth_variant_visibility(wrapper_group, mouth_name or expression(expression_name).mouth)
+        if layer in {"left_eye", "right_eye"}:
+            _set_pupil_gaze(wrapper_group, gaze, phase, motion_progress, interaction_strength)
         transform = _face_transform(expression_name, layer, mouth_name, gaze, phase, motion_progress, interaction_strength, blink, head_tilt)
         if transform:
             wrapper_group.set("transform", transform)
@@ -188,6 +209,8 @@ def render_semantic_character(master: str | Path, character_id: str, pose: str, 
             if is_speaking and layer_name in {"head", "ears", "front_hair"}:
                 target_y += speech * 0.45
         body_rotation = body_turn if layer_name in {"torso", "left_arm", "right_arm"} else 0.0
+        if is_speaking and layer_name in {"left_arm", "right_arm"}:
+            body_rotation += speech * (0.85 if layer_name == "left_arm" else -0.70)
         micro_scale = 1.0 + (0.004 * breath if layer_name == "torso" else 0.0)
         transformed, position = _transform_layer(layer, target_anchor=(target_x, target_y), rotation=current.rotation + body_rotation, scale=current.scale * micro_scale)
         if transformed.getbbox():
