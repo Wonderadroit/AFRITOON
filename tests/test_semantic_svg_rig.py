@@ -90,6 +90,15 @@ def test_target_aware_geometry_changes_head_and_body_without_new_artwork():
     assert right.getbbox() is not None
 
 
+def test_pupil_gaze_changes_eye_layer_without_translating_the_eye_whites():
+    path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
+    center = _layer_svgs(path, gaze="center")["left_eye"]
+    right = _layer_svgs(path, gaze="right", interaction_strength=1.0)["left_eye"]
+    assert "translate(9.0 0)" not in right
+    assert "translate(7.000 0)" in right
+    assert center != right
+
+
 def test_target_aware_geometry_is_temporally_gated():
     pytest.importorskip("cairosvg")
     path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
@@ -106,3 +115,11 @@ def test_time_drives_subtle_life_motion():
     early = render_semantic_character(path, "tunde", "idle", time=0.0)
     later = render_semantic_character(path, "tunde", "idle", time=1.0)
     assert early.tobytes() != later.tobytes()
+
+
+def test_speaking_produces_a_distinct_arm_performance():
+    pytest.importorskip("cairosvg")
+    path = ROOT / "assets" / "characters" / "tunde" / "art" / "tunde_front.svg"
+    silent = render_semantic_character(path, "tunde", "talk", expression_name="happy", speaking=False, time=1.0)
+    speaking = render_semantic_character(path, "tunde", "talk", expression_name="happy", speaking=True, time=1.0)
+    assert silent.tobytes() != speaking.tobytes()
